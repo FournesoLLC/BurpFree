@@ -1,0 +1,20 @@
+# GraphQL security checks
+metadata:
+  name: GraphQL security misconfiguration
+  description: Tests GraphQL endpoints for introspection, batch abuse, and field suggestion leaks.
+  author: BurpFree
+  version: "1.0"
+  tags: [active, graphql, misconfig]
+severity: medium
+confidence: tentative
+type: active
+probes:
+  - name: Introspection enabled
+    query: "{__schema{types{name}}}"
+    match_body: "__schema"
+  - name: Batch query abuse
+    query: '[{"query":"{__typename}"},{"query":"{__typename}"}]'
+  - name: Field suggestion
+    query: "{user{passwor}}"
+    match_body: "Did you mean"
+remediation: Disable introspection in production. Limit query depth and batch size.

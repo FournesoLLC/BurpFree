@@ -1,0 +1,26 @@
+[package]
+name = "burpfree-core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "Core traffic model, headers, scope, and event bus."
+
+[dependencies]
+bytes = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+chrono = { workspace = true }
+url = { workspace = true }
+percent-encoding = { workspace = true }
+regex = { workspace = true }
+blake3 = { workspace = true }
+once_cell = { workspace = true }
+parking_lot = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+base64 = { workspace = true }
+rand = { workspace = true }

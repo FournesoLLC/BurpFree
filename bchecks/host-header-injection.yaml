@@ -1,0 +1,52 @@
+# Host header injection
+#
+# Active check — sends requests with manipulated Host headers to
+# detect web cache poisoning, password reset poisoning, and
+# server-side request routing abuse.
+
+metadata:
+  name: Host header injection
+  description: >
+    Tests for Host header injection vulnerabilities that can lead
+    to web cache poisoning, password reset poisoning, or internal
+    service access via routing abuse.
+  author: BurpFree
+  version: "1.0"
+  tags: [active, host-header, cache-poisoning]
+
+severity: medium
+confidence: tentative
+type: active
+
+probes:
+  - name: "Duplicate Host header"
+    headers:
+      Host: ["target.com", "evil.example.com"]
+    match:
+      body_contains: "evil.example.com"
+
+  - name: "X-Forwarded-Host override"
+    headers:
+      X-Forwarded-Host: "evil.example.com"
+    match:
+      body_contains: "evil.example.com"
+
+  - name: "X-Host override"
+    headers:
+      X-Host: "evil.example.com"
+    match:
+      body_contains: "evil.example.com"
+
+  - name: "Absolute URL with different Host"
+    absolute_url: true
+    headers:
+      Host: "evil.example.com"
+    match:
+      status: [200]
+      body_contains: "evil.example.com"
+
+remediation: >
+  Validate the Host header against a strict allowlist. Do not use
+  the Host header to generate URLs in emails, redirects, or cached
+  content. Configure the web server to reject requests with
+  unrecognized Host values.

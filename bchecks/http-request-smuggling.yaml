@@ -1,0 +1,51 @@
+# HTTP request smuggling detection
+#
+# Active check — probes for CL.TE and TE.CL desync between
+# front-end and back-end servers. Maps to Burp's "HTTP request
+# smuggling" scanner issue.
+
+metadata:
+  name: HTTP request smuggling
+  description: >
+    Tests for HTTP request smuggling vulnerabilities caused by
+    discrepancies in how front-end and back-end servers parse
+    Content-Length and Transfer-Encoding headers.
+  author: BurpFree
+  version: "1.0"
+  tags: [active, smuggling, desync]
+
+severity: high
+confidence: tentative
+type: active
+
+probes:
+  - name: "CL.TE basic"
+    description: >
+      Sends a request with both Content-Length and Transfer-Encoding
+      headers to detect CL.TE desync. If the front-end uses CL and
+      the back-end uses TE, the remainder of the body becomes the
+      start of the next request.
+    method: POST
+    headers:
+      Content-Length: "6"
+      Transfer-Encoding: "chunked"
+    body: "0\r\n\r\nG"
+    timing_based: true
+    delay_threshold_ms: 5000
+
+  - name: "TE.CL basic"
+    description: >
+      Reverse desync — front-end uses TE, back-end uses CL.
+    method: POST
+    headers:
+      Content-Length: "3"
+      Transfer-Encoding: "chunked"
+    body: "1\r\nA\r\n0\r\n\r\n"
+    timing_based: true
+    delay_threshold_ms: 5000
+
+remediation: >
+  Configure the front-end and back-end to consistently use the same
+  method for determining request boundaries. Disable HTTP/1.1
+  keep-alive where possible, or ensure Transfer-Encoding takes
+  strict priority over Content-Length.

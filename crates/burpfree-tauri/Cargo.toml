@@ -1,0 +1,59 @@
+[package]
+name = "burpfree-tauri"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "Tauri desktop shell for BurpFree."
+
+[build-dependencies]
+tauri-build = { version = "2.0", features = [] }
+
+[dependencies]
+# Tauri feature set is deliberately empty — notably, we do NOT enable
+# the `devtools` feature. In release builds that means the WebView2
+# devtools (Inspect element, Console, Sources, Network, …) are
+# compiled out entirely, so no keystroke or chrome affordance can
+# reach them. In debug builds devtools are still available for the
+# developer; the matching JS guard in `web/src/chrome.ts` suppresses
+# the usual F12 / Ctrl+Shift+I shortcuts so dev builds behave like
+# release from the end-user perspective.
+tauri = { version = "2.0", features = [] }
+burpfree-core = { path = "../burpfree-core" }
+burpfree-codec = { path = "../burpfree-codec" }
+burpfree-ca = { path = "../burpfree-ca" }
+burpfree-proxy = { path = "../burpfree-proxy" }
+burpfree-storage = { path = "../burpfree-storage" }
+burpfree-engines = { path = "../burpfree-engines" }
+burpfree-extensions = { path = "../burpfree-extensions" }
+burpfree-oob = { path = "../burpfree-oob" }
+burpfree-mcp = { path = "../burpfree-mcp" }
+burpfree-report = { path = "../burpfree-report" }
+tokio = { workspace = true }
+tokio-tungstenite = { workspace = true }
+futures-util = { workspace = true }
+base64 = { workspace = true }
+anyhow = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+parking_lot = { workspace = true }
+async-trait = { workspace = true }
+chrono = { workspace = true }
+dirs = { workspace = true }
+url = { workspace = true }
+axum = { workspace = true }
+tower = { workspace = true }
+tower-http = { workspace = true }
+hyper = { workspace = true }
+http = { workspace = true }
+
+[features]
+default = []
+# When off, the UI expects a dev server on 5173 (vite dev)
+dev = []
+
+[dev-dependencies]
+tempfile = { workspace = true }

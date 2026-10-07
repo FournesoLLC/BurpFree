@@ -1,0 +1,22 @@
+# Web cache poisoning
+metadata:
+  name: Web cache poisoning
+  description: Tests for cache poisoning via unkeyed headers.
+  author: BurpFree
+  version: "1.0"
+  tags: [active, cache-poisoning, misconfig]
+severity: high
+confidence: tentative
+type: active
+probes:
+  - name: X-Forwarded-Host reflection
+    header: X-Forwarded-Host
+    value: "evil.example.com"
+    match_body: "evil.example.com"
+  - name: X-Forwarded-Proto
+    header: X-Forwarded-Proto
+    value: "nothttps"
+  - name: X-Original-URL
+    header: X-Original-URL
+    value: "/admin"
+remediation: Add Vary headers. Use Cache-Control no-store on dynamic content.

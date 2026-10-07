@@ -1,0 +1,22 @@
+[package]
+name = "burpfree-api"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "API definition importers for BurpFree (OpenAPI 3.x and Postman v2.1)."
+
+[dependencies]
+burpfree-core = { path = "../burpfree-core" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+url = { workspace = true }
+tracing = { workspace = true }
+# serde_yml is the maintained fork of serde_yaml; small, pure Rust.
+serde_yml = "0.0.12"
+
+[dev-dependencies]
+tempfile = { workspace = true }

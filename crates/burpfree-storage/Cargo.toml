@@ -1,0 +1,29 @@
+[package]
+name = "burpfree-storage"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "Project directory, SQLite history, and content-addressed blob storage."
+
+[dependencies]
+burpfree-core = { path = "../burpfree-core" }
+rusqlite = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+chrono = { workspace = true }
+blake3 = { workspace = true }
+parking_lot = { workspace = true }
+tracing = { workspace = true }
+tokio = { workspace = true }
+dirs = { workspace = true }
+walkdir = { workspace = true }
+zip = { version = "2.2", default-features = false, features = ["deflate"] }
+base64 = { workspace = true }
+url = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }

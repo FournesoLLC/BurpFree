@@ -1,0 +1,42 @@
+# Rust build artifacts
+/target/
+F:/burpfree-target/
+**/*.rs.bk
+
+# Node / Vite
+node_modules/
+web/node_modules/
+web/dist/
+*.tsbuildinfo
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Kiro
+.kiro/
+
+# Cache
+.cache/
+*.log
+
+# Environment / secrets
+.env
+.env.*
+*.pem
+*.key
+
+# Burp Suite screenshots (deleted — see SCREENSHOTS_REPORT.md)
+/screens/
+
+# Temp files
+*.tmp
+*.bak

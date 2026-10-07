@@ -1,0 +1,25 @@
+# NoSQL injection detection
+metadata:
+  name: NoSQL injection
+  description: Tests parameters for MongoDB/CouchDB operator injection.
+  author: BurpFree
+  version: "1.0"
+  tags: [active, nosqli, injection]
+severity: high
+confidence: tentative
+type: active
+payloads:
+  - value: '{"$gt":""}'
+    location: body
+    content_type: "application/json"
+  - value: '{"$ne":null}'
+    location: body
+    content_type: "application/json"
+  - value: "[$ne]=1"
+    location: query
+  - value: '{"$where":"sleep(5000)"}'
+    location: body
+    timing_threshold_ms: 4500
+  - value: '{"$regex":".*"}'
+    location: body
+remediation: Use parameterized queries. Validate input types strictly. Disable $where evaluation.

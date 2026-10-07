@@ -1,0 +1,14 @@
+# Subdomain takeover indicators
+metadata:
+  name: Subdomain takeover indicators
+  description: Passive check for DNS CNAME patterns indicating potential subdomain takeover.
+  author: BurpFree
+  version: "1.0"
+  tags: [passive, subdomain-takeover, misconfig]
+severity: high
+confidence: tentative
+type: passive
+indicators:
+  - match_body_any: ["There isn't a GitHub Pages site here", "NoSuchBucket", "herokucdn.com/error-pages", "The specified bucket does not exist", "Repository not found", "Sorry, this shop is currently unavailable", "Do you want to register"]
+    message: "Response contains a pattern associated with unclaimed cloud services — potential subdomain takeover."
+remediation: Remove dangling CNAME DNS records. Claim the external resource or delete the record.

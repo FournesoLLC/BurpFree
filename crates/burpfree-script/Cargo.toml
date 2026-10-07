@@ -1,0 +1,21 @@
+[package]
+name = "burpfree-script"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "Sandboxed Rhai scripting for filters, match/replace predicates and user helpers."
+
+[dependencies]
+burpfree-core = { path = "../burpfree-core" }
+rhai = { version = "1.21", features = ["sync"] }
+regex = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }

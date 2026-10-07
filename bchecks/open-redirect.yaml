@@ -1,0 +1,64 @@
+# Open redirect detection
+#
+# Active check — injects redirect payloads into URL parameters to
+# detect unvalidated redirect vulnerabilities. Maps to Burp's
+# "Open redirection" scanner issue.
+
+metadata:
+  name: Open redirect detection
+  description: >
+    Tests URL parameters for unvalidated redirect vulnerabilities
+    by injecting external URLs and checking for redirect responses.
+  author: BurpFree
+  version: "1.0"
+  tags: [active, redirect, injection]
+
+severity: medium
+confidence: tentative
+type: active
+
+# Parameters to test — common redirect parameter names
+target_params:
+  - url
+  - redirect
+  - redirect_url
+  - redirect_uri
+  - return
+  - returnUrl
+  - return_url
+  - next
+  - next_url
+  - dest
+  - destination
+  - redir
+  - goto
+  - target
+  - continue
+  - callback
+  - path
+
+payloads:
+  - value: "https://evil.example.com"
+    description: "Direct external URL"
+
+  - value: "//evil.example.com"
+    description: "Protocol-relative URL"
+
+  - value: "/\\evil.example.com"
+    description: "Backslash-prefix bypass"
+
+  - value: "https://evil.example.com%00.target.com"
+    description: "Null-byte domain bypass"
+
+  - value: "https://target.com@evil.example.com"
+    description: "Userinfo bypass"
+
+match:
+  status: [301, 302, 303, 307, 308]
+  header_contains:
+    Location: "evil.example.com"
+
+remediation: >
+  Validate redirect targets against a strict allowlist of permitted
+  URLs or domains. Avoid using user-supplied input directly in
+  Location headers. Use relative paths when possible.

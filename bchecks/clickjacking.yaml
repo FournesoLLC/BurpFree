@@ -1,0 +1,45 @@
+# Clickjacking vulnerability
+#
+# Passive check — determines if a page is frameable by checking
+# for X-Frame-Options and CSP frame-ancestors directives.
+# Maps to Burp's "Frameable response" scanner issue.
+
+metadata:
+  name: Clickjacking (frameable response)
+  description: >
+    Checks if HTML responses can be embedded in frames by verifying
+    the presence of X-Frame-Options and Content-Security-Policy
+    frame-ancestors directives.
+  author: BurpFree
+  version: "1.0"
+  tags: [passive, clickjacking, framing]
+
+severity: medium
+confidence: certain
+type: passive
+
+conditions:
+  content_type: "text/html"
+
+checks:
+  - name: "X-Frame-Options missing"
+    header_absent: "X-Frame-Options"
+    csp_missing: "frame-ancestors"
+    message: >
+      The response does not include X-Frame-Options or a CSP
+      frame-ancestors directive. An attacker could embed this page
+      in a transparent iframe to perform clickjacking attacks,
+      tricking users into clicking hidden UI elements.
+
+  - name: "X-Frame-Options ALLOWALL"
+    header_value:
+      X-Frame-Options: "ALLOWALL"
+    message: >
+      X-Frame-Options is set to ALLOWALL, which provides no
+      protection against clickjacking.
+
+remediation: >
+  Set X-Frame-Options to DENY or SAMEORIGIN, or use the CSP
+  frame-ancestors directive to restrict framing to trusted origins.
+  For modern browsers, frame-ancestors in CSP is preferred as it
+  supports allowlisting specific origins.

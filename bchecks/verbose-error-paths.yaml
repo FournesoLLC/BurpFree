@@ -1,0 +1,84 @@
+# Verbose error / debug path exposure
+#
+# Active check — requests common error, debug, and status endpoints
+# that leak server internals when left accessible in production.
+
+metadata:
+  name: Verbose error / debug path exposure
+  description: >
+    Probes for common debug, status, and error-reporting endpoints
+    that leak server internals (stack traces, env vars, config)
+    when left accessible in production.
+  author: BurpFree
+  version: "2.0"
+  tags: [active, reconnaissance, debug, misconfig]
+
+severity: medium
+confidence: tentative
+type: active
+
+candidates:
+  - /debug
+  - /debug/vars
+  - /debug/pprof/
+  - /_debug
+  - /trace
+  - /actuator
+  - /actuator/env
+  - /actuator/health
+  - /actuator/info
+  - /actuator/mappings
+  - /actuator/configprops
+  - /actuator/beans
+  - /actuator/loggers
+  - /actuator/threaddump
+  - /actuator/heapdump
+  - /health
+  - /healthz
+  - /ready
+  - /readyz
+  - /metrics
+  - /prometheus
+  - /.well-known/openid-configuration
+  - /server-info
+  - /server-status
+  - /nginx_status
+  - /status
+  - /info
+  - /version
+  - /api/version
+  - /api/health
+  - /graphql
+  - /graphiql
+  - /playground
+  - /swagger-ui.html
+  - /swagger-ui/
+  - /api-docs
+  - /openapi.json
+  - /openapi.yaml
+  - /v2/api-docs
+  - /v3/api-docs
+  - /redoc
+  - /wp-json/
+  - /wp-json/wp/v2/users
+  - /__debug__
+  - /elmah.axd
+  - /trace.axd
+  - /error
+  - /errors
+  - /test
+  - /test.php
+  - /phpinfo.php
+  - /info.php
+
+match:
+  status: [200]
+  body_not_contains:
+    - "404"
+    - "Not Found"
+    - "Page not found"
+
+remediation: >
+  Disable or restrict access to debug, status, and API documentation
+  endpoints in production. Use authentication, IP allowlists, or
+  network segmentation to limit access to administrative interfaces.

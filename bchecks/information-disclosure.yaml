@@ -1,0 +1,67 @@
+# Information disclosure in responses
+#
+# Passive check — scans response bodies and headers for leaked
+# sensitive data patterns. Maps to multiple Burp scanner issues:
+# "Email addresses disclosed", "Private IP addresses disclosed",
+# "Credit card numbers disclosed", etc.
+
+metadata:
+  name: Information disclosure in responses
+  description: >
+    Detects leaked sensitive data patterns in HTTP responses including
+    email addresses, private IP addresses, AWS keys, and stack traces.
+  author: BurpFree
+  version: "1.0"
+  tags: [passive, information-disclosure]
+
+severity: info
+confidence: tentative
+type: passive
+
+patterns:
+  - name: Email address
+    regex: "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"
+    severity: info
+    message: "Email address found in response body."
+
+  - name: Private IPv4 address
+    regex: "(?:10\\.|172\\.(?:1[6-9]|2[0-9]|3[01])\\.|192\\.168\\.)[0-9.]+"
+    severity: low
+    message: "Private/internal IP address leaked in response."
+
+  - name: AWS Access Key
+    regex: "AKIA[0-9A-Z]{16}"
+    severity: high
+    message: "Possible AWS access key ID found in response."
+
+  - name: AWS Secret Key pattern
+    regex: "[0-9a-zA-Z/+]{40}"
+    context: "aws_secret|secret_key|SecretAccessKey"
+    severity: high
+    message: "Possible AWS secret access key found near key-related context."
+
+  - name: Stack trace (Java)
+    regex: "at [a-zA-Z0-9$_.]+\\([A-Za-z0-9]+\\.java:[0-9]+\\)"
+    severity: low
+    message: "Java stack trace found — may reveal internal class paths and versions."
+
+  - name: Stack trace (Python)
+    regex: "File \"[^\"]+\\.py\", line [0-9]+"
+    severity: low
+    message: "Python traceback found — may reveal internal file paths."
+
+  - name: Stack trace (.NET)
+    regex: "at [A-Za-z0-9_.]+\\.[A-Za-z0-9_]+\\([^)]*\\) in [A-Za-z]:"
+    severity: low
+    message: ".NET stack trace found — may reveal internal paths and methods."
+
+  - name: SQL error message
+    regex: "(?i)(SQL syntax|mysql_fetch|ORA-[0-9]+|pg_query|sqlite3\\.OperationalError|SQLSTATE)"
+    severity: medium
+    message: "SQL error message found — may indicate SQL injection vulnerability."
+
+  - name: Server version header
+    regex: "^Server: .+/[0-9]+\\.[0-9]"
+    location: header
+    severity: info
+    message: "Server version disclosed in response headers."

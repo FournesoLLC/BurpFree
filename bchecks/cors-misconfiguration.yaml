@@ -1,0 +1,43 @@
+# CORS misconfiguration
+#
+# Active check — sends requests with crafted Origin headers to detect
+# overly permissive CORS configurations. Maps to Burp's "Cross-origin
+# resource sharing" scanner issue family.
+
+metadata:
+  name: CORS misconfiguration
+  description: >
+    Tests for permissive Access-Control-Allow-Origin configurations
+    that may allow arbitrary cross-origin access to sensitive data.
+  author: BurpFree
+  version: "1.0"
+  tags: [active, cors, misconfig]
+
+severity: high
+confidence: tentative
+type: active
+
+probes:
+  - origin: "https://evil.example.com"
+    description: "Arbitrary origin reflection"
+    match:
+      header: Access-Control-Allow-Origin
+      equals: "https://evil.example.com"
+
+  - origin: "null"
+    description: "Null origin accepted"
+    match:
+      header: Access-Control-Allow-Origin
+      equals: "null"
+
+  - origin: "https://target.example.com.evil.com"
+    description: "Subdomain prefix bypass"
+    match:
+      header: Access-Control-Allow-Origin
+      contains: "evil.com"
+
+remediation: >
+  Configure the server to validate the Origin header against a strict
+  allowlist. Avoid reflecting arbitrary origins or accepting the "null"
+  origin. Ensure Access-Control-Allow-Credentials is not set to true
+  alongside a wildcard or reflected origin.

@@ -1,0 +1,23 @@
+[package]
+name = "burpfree-mcp"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "Model Context Protocol server exposing BurpFree capabilities to AI clients."
+
+[dependencies]
+burpfree-core = { path = "../burpfree-core" }
+burpfree-storage = { path = "../burpfree-storage" }
+burpfree-engines = { path = "../burpfree-engines" }
+burpfree-report = { path = "../burpfree-report" }
+tokio = { workspace = true, features = ["io-std"] }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }

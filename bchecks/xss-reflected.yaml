@@ -1,0 +1,21 @@
+# Reflected XSS detection
+metadata:
+  name: Reflected cross-site scripting (XSS)
+  description: Tests parameters for reflected XSS by injecting probe payloads.
+  author: BurpFree
+  version: "1.0"
+  tags: [active, xss, injection]
+severity: high
+confidence: tentative
+type: active
+payloads:
+  - value: "<script>alert(1)</script>"
+    match_body: "<script>alert(1)</script>"
+  - value: "\"><img src=x onerror=alert(1)>"
+    match_body: "onerror=alert(1)"
+  - value: "'-alert(1)-'"
+    match_body: "'-alert(1)-'"
+  - value: "javascript:alert(1)"
+    match_body: "javascript:alert"
+remediation: >
+  Implement context-aware output encoding. Use CSP to restrict inline scripts.

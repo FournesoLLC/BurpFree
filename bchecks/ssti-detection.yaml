@@ -1,0 +1,23 @@
+# Server-side template injection detection
+metadata:
+  name: Server-side template injection (SSTI)
+  description: Tests parameters for template injection across Jinja2, Twig, Freemarker, ERB, and Spring EL.
+  author: BurpFree
+  version: "1.0"
+  tags: [active, ssti, injection]
+severity: critical
+confidence: tentative
+type: active
+payloads:
+  - value: "{{7*7}}"
+    match_body: "49"
+  - value: "${7*7}"
+    match_body: "49"
+  - value: "<%= 7*7 %>"
+    match_body: "49"
+  - value: "{{7*'7'}}"
+    match_body: "7777777"
+  - value: "${{7*7}}"
+    match_body: "49"
+remediation: >
+  Never pass user input to template engines. Use logic-less templates. Sandbox template evaluation.

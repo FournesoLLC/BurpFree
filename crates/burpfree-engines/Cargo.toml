@@ -1,0 +1,44 @@
+[package]
+name = "burpfree-engines"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "Repeater, Intruder, Scanner (passive+active), Site map, Session, Decoder, Comparer, Sequencer."
+
+[dependencies]
+burpfree-core = { path = "../burpfree-core" }
+burpfree-codec = { path = "../burpfree-codec" }
+burpfree-proxy = { path = "../burpfree-proxy" }
+burpfree-storage = { path = "../burpfree-storage" }
+burpfree-oob = { path = "../burpfree-oob" }
+burpfree-script = { path = "../burpfree-script" }
+rhai = { version = "1.21", features = ["sync"] }
+tokio = { workspace = true }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde_yaml = { workspace = true }
+chrono = { workspace = true }
+regex = { workspace = true }
+tracing = { workspace = true }
+parking_lot = { workspace = true }
+dashmap = { workspace = true }
+rand = { workspace = true }
+url = { workspace = true }
+async-trait = { workspace = true }
+rustls = { workspace = true }
+tokio-rustls = { workspace = true }
+http = { workspace = true }
+futures-util = { workspace = true }
+once_cell = { workspace = true }
+blake3 = { workspace = true }
+walkdir = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }
+parking_lot = { workspace = true }
+burpfree-ca = { path = "../burpfree-ca" }
+percent-encoding = { workspace = true }

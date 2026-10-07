@@ -1,0 +1,5946 @@
+/* Theme toggle:
+ *   dark (default)  — root palette below
+ *   light           — overrides applied when <html class="theme-light">
+ *
+ * The palette is picked at the `:root` / `.theme-light` CSS layer; every
+ * concrete color used across the app resolves through these variables
+ * so swapping classes is enough to retheme the entire shell. */
+
+:root {
+  /* R896: Burp Suite 2026.8 canonical palette — matches the real
+   * installation's observed tokens so the shell reads byte-identical
+   * to the reference screenshots. Previously our palette drifted
+   * bluish-dark (#1e1f22); the real Burp grey family is slightly
+   * warmer (#2b2b2b base) with a specific signature orange #ed6424. */
+  --bg: #2b2b2b;              /* Burp main window bg */
+  --bg-raised: #3c3f41;        /* Panel bg (lighter than main) */
+  --bg-elev: #4e5254;          /* Elevated / hover bg */
+  --bg-row: #313335;           /* Table row base */
+  --bg-row-alt: #353739;       /* Zebra stripe */
+  --border: #4e5254;           /* Standard border */
+  --border-strong: #5e6264;    /* Modal border / strong divider */
+  --text: #bbbbbb;             /* Primary text — Burp's slightly muted body */
+  --text-dim: #808080;         /* Secondary text */
+  --text-faint: #606366;       /* Tertiary / disabled text */
+  --accent: #ed6424;           /* Burp signature orange */
+  --accent-hover: #ff7a3d;     /* Hover brighter */
+  --accent-dim: #4d2f14;       /* Tinted bg for active */
+  --accent-text: #ffffff;      /* Text on accent bg */
+  --red: #d44a4a;              /* Burp error red */
+  --amber: #d9b26f;            /* Burp warning amber */
+  --green: #499c54;            /* Burp OK green */
+  --blue: #6897bb;             /* Burp info blue */
+  --purple: #9876aa;           /* Burp JVM-identifier purple */
+  --mono: "JetBrains Mono", "Consolas", "DejaVu Sans Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+
+/* Light theme: Burp Suite 2026.8 light variant. Keeps the signature
+ * orange, swaps neutrals to a cleaner white/grey family. */
+.theme-light {
+  --bg: #f0f0f0;               /* Burp light bg */
+  --bg-raised: #ffffff;        /* Panels white */
+  --bg-elev: #e8e8e8;          /* Hover tint */
+  --bg-row: #ffffff;
+  --bg-row-alt: #f6f6f6;
+  --border: #c0c0c0;
+  --border-strong: #909090;
+  --text: #2b2b2b;             /* Match dark bg exactly for symmetry */
+  --text-dim: #606060;
+  --text-faint: #909090;
+  --accent: #d55a1f;           /* Darker orange for white bg contrast */
+  --accent-hover: #ed6424;
+  --accent-dim: #fde3d0;
+  --accent-text: #ffffff;
+  --red: #c62f2f;
+  --amber: #a06e08;
+  --green: #2d7a3a;
+  --blue: #2b5fd1;
+  --purple: #7046d8;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  background: var(--bg);
+  color: var(--text);
+  /* R896: Burp Suite 2026.8 font stack. Real Burp uses Segoe UI
+   * (Windows), Dejavu Sans (Linux), SF (macOS) at 11px as the body
+   * default — denser than our previous 12.5px. Tighter font-size
+   * makes rows / tabs / panel chrome read more like Burp. */
+  font-family: "Segoe UI", "Dejavu Sans", -apple-system, BlinkMacSystemFont,
+               Roboto, Helvetica, Arial, sans-serif;
+  font-size: 11px;
+  line-height: 1.35;
+  overflow: hidden;
+  -webkit-user-select: none;
+          user-select: none;
+  /* R896: Burp's exact antialiasing — Windows ClearType-friendly */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+input, textarea, pre, code, .mono {
+  -webkit-user-select: text;
+          user-select: text;
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ------------- Buttons / inputs ----------------------------------------
+ * R896: Burp Suite 2026.8 button style — tighter padding (3px/9px vs
+ * our old 4px/10px), 11px font, 2px radius (Burp uses 2px not 3), flat
+ * surface with hover border reveal. Matches Burp's compact density
+ * exactly. */
+button {
+  background: var(--bg-elev);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 3px 9px;
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 11px;
+  font-family: inherit;
+  line-height: 1.35;
+}
+button:hover:not(:disabled) { background: var(--border); border-color: var(--border-strong); }
+button:disabled { opacity: 0.4; cursor: not-allowed; }
+button.primary {
+  background: var(--accent);
+  color: var(--accent-text);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+button.primary:hover:not(:disabled) { background: var(--accent-hover); border-color: var(--accent-hover); }
+button.danger { color: var(--red); border-color: #562426; }
+button.danger:hover:not(:disabled) { background: #3a1f22; }
+button.ghost { background: transparent; border-color: transparent; }
+button.ghost:hover:not(:disabled) { background: var(--bg-elev); border-color: var(--border); }
+
+/* R896: Burp-identical input/select/textarea density — 11px font,
+ * tight 3px/6px padding, no rounded corners (Burp uses hard edges),
+ * subtle inset shadow for depth. */
+input[type="text"],
+input[type="number"],
+input[type="search"],
+input[type="password"],
+select,
+textarea {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 3px 6px;
+  border-radius: 2px;
+  font-size: 11px;
+  font-family: inherit;
+}
+textarea {
+  font-family: var(--mono);
+  line-height: 1.4;
+}
+
+/* R913: .rep-ai-btn removed — AI button stripped from toolbar to
+ * match Burp's Repeater which has no AI button in Community Edition. */
+
+/* R732: Burp-identical Send button — the Repeater's primary action
+ * is the single most visible UI element in Burp's Repeater pane. The
+ * screenshot shows a bright red-orange prominent button with bold
+ * white text, no visible border, taller than other toolbar buttons.
+ * We match that silhouette exactly. */
+/* R899: Burp Send button now derives its orange from the R896 `--accent`
+ * variable (previously hardcoded to the pre-R896 `#ed6424`), so palette
+ * changes propagate automatically. Also tightened the padding slightly
+ * (was 5/24 → now 4/20) to match Burp's install, which has the Send
+ * button sit flush with the row height of the surrounding toolbar
+ * rather than extend above it. */
+button.burp-send {
+  background: var(--accent);
+  color: var(--accent-text);
+  border: 1px solid var(--accent);
+  font-weight: 600;
+  padding: 4px 20px;
+  min-width: 72px;
+  letter-spacing: 0.2px;
+  border-radius: 2px;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.25);
+}
+button.burp-send:hover:not(:disabled) {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+button.burp-send:active:not(:disabled) {
+  background: #c35019;
+  border-color: #c35019;
+}
+button.burp-send:disabled {
+  background: #5a3a24;
+  border-color: #5a3a24;
+  color: #c8aa94;
+  opacity: 1;
+}
+/* The Cancel variant replaces Send while a request is in-flight — same
+ * silhouette but neutral grey so operators notice the state change. */
+button.burp-send-cancel {
+  background: var(--bg-elev);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  font-weight: 500;
+  padding: 5px 24px;
+  min-width: 72px;
+  border-radius: 2px;
+}
+button.burp-send-cancel:hover:not(:disabled) { background: var(--border); }
+
+/* R732: Target URL display block + HTTP/1 badge sit on the far right of
+ * the Repeater toolbar. The URL truncates with ellipsis so a long path
+ * doesn't push HTTP/1 off-screen; the pencil icon lets the operator
+ * swap target hosts. HTTP/1 shows the protocol version — static for
+ * now since BurpFree only speaks HTTP/1.1 end-to-end. */
+.rep-target-display {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  color: var(--text-dim);
+  font-size: 11px;
+  max-width: 50%;
+  min-width: 0;
+}
+.rep-target-display .rep-target-label { color: var(--text-faint); flex-shrink: 0; }
+.rep-target-display .rep-target-url {
+  color: var(--text);
+  font-family: var(--mono);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.rep-target-display .rep-target-url-empty {
+  color: var(--text-faint);
+  font-style: italic;
+  font-family: inherit;
+}
+.rep-target-display .rep-target-edit {
+  background: transparent;
+  border: 0;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 2px 4px;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+.rep-target-display .rep-target-edit:hover { color: var(--text); }
+.rep-http-badge {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 2px 7px;
+  font-size: 11px;
+  border-radius: 2px;
+  font-family: var(--mono);
+  flex-shrink: 0;
+  margin-left: 4px;
+}
+/* R773: Burp-identical environment-selector dropdown button in
+ * the Repeater toolbar. Matches Burp Suite 2026.8's env picker
+ * silhouette — small dim pill with a leading status dot + name
+ * + trailing caret. Hover state uses the accent-dim background
+ * to signal interactivity. The leading dot colors shift from
+ * amber (uncertain) to green (production) by convention —
+ * BurpFree ships them neutral since the picker is cosmetic. */
+.rep-env-selector {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 2px 6px 2px 8px;
+  font-size: 11px;
+  border-radius: 2px;
+  font-family: var(--mono);
+  flex-shrink: 0;
+  margin-left: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+.rep-env-selector:hover {
+  background: var(--accent-dim, rgba(237, 100, 36, 0.12));
+  color: var(--text);
+  border-color: var(--accent, #ed6424);
+}
+.rep-env-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent, #ed6424);
+  opacity: 0.6;
+}
+.rep-env-selector:hover .rep-env-dot {
+  opacity: 1;
+}
+.rep-env-caret {
+  font-size: 9px;
+  opacity: 0.7;
+  margin-left: 1px;
+}
+/* R776: Burp-identical intercept-pane empty state. Mirrors Burp
+ * Suite 2026.8's Proxy intercept empty state — centered SVG
+ * silhouette, bold headline, descriptive subhead, action strip,
+ * and a dim shortcut hint row at the bottom. Replaces the single-
+ * line "Select a pending message" string we shipped before. The
+ * icon uses `currentColor` so it inherits `--text-dim` and shifts
+ * to `--text` on container hover (not that hover applies to the
+ * empty state, but keeps the pattern consistent with other icons).
+ * The action strip has primary (`.burp-send` red) + secondary
+ * (default neutral) buttons so operators see the recommended first
+ * action immediately. */
+.prx-intercept-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-dim);
+  max-width: 540px;
+  margin: 0 auto;
+  text-align: center;
+}
+.prx-intercept-empty-icon {
+  color: var(--text-dim);
+  opacity: 0.55;
+  margin-top: 20px;
+}
+.prx-intercept-empty-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.1px;
+}
+.prx-intercept-empty-sub {
+  font-size: 11px;
+  color: var(--text-dim);
+  max-width: 480px;
+}
+.prx-intercept-empty-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.prx-intercept-empty-hints {
+  font-size: 11px;
+  color: var(--text-dim);
+  opacity: 0.8;
+  margin-top: 16px;
+  max-width: 500px;
+  line-height: 1.45;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+.prx-intercept-empty-hints b {
+  color: var(--text);
+  font-weight: 600;
+}
+/* R778: Burp-identical HTTP history empty-state card. Shares the
+ * .prx-intercept-empty visual family but scoped to the History
+ * table (`.hist-empty-card`). Two render variants: initial empty
+ * (fresh project) + filtered empty (0 matches). Both use the same
+ * centered SVG + headline + subhead + optional hint-strip shape
+ * — only the icon + title + body copy change. */
+.hist-empty-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-dim);
+  max-width: 540px;
+  margin: 24px auto;
+  text-align: center;
+  padding: 0 16px;
+}
+.hist-empty-icon {
+  color: var(--text-dim);
+  opacity: 0.55;
+}
+.hist-empty-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.1px;
+}
+.hist-empty-sub {
+  font-size: 11px;
+  color: var(--text-dim);
+  max-width: 480px;
+  line-height: 1.4;
+}
+.hist-empty-sub b {
+  color: var(--text);
+  font-weight: 600;
+}
+.hist-empty-hints {
+  font-size: 11px;
+  color: var(--text-dim);
+  opacity: 0.85;
+  margin-top: 10px;
+  max-width: 500px;
+  line-height: 1.45;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+.hist-empty-hints b {
+  color: var(--text);
+  font-weight: 600;
+}
+/* R781: Burp-identical Scanner empty-state card family. Shares the
+ * `.hist-empty-card` + `.prx-intercept-empty` visual family but
+ * scoped to the Scanner findings table (`.scan-empty-card`).
+ * Shows a shield-with-checkmark SVG + "No findings yet" headline
+ * + explanation of how findings land (passive / active / live
+ * scan) + a shortcut hint strip. Rendered inside a tbody <tr> with
+ * colspan=6 so it slots into the table layout. */
+.scan-empty-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-dim);
+  max-width: 560px;
+  margin: 24px auto;
+  text-align: center;
+  padding: 0 16px;
+}
+.scan-empty-icon {
+  color: var(--text-dim);
+  opacity: 0.55;
+}
+.scan-empty-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.1px;
+}
+.scan-empty-sub {
+  font-size: 11px;
+  color: var(--text-dim);
+  max-width: 500px;
+  line-height: 1.4;
+}
+.scan-empty-sub b {
+  color: var(--text);
+  font-weight: 600;
+}
+.scan-empty-hints {
+  font-size: 11px;
+  color: var(--text-dim);
+  opacity: 0.85;
+  margin-top: 10px;
+  max-width: 520px;
+  line-height: 1.45;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+.scan-empty-hints b {
+  color: var(--text);
+  font-weight: 600;
+}
+/* R792: Burp-identical Inspector per-section copy button —
+ * sits in the section header to the right of the count badge.
+ * Low-key chrome so it doesn't fight for attention with the
+ * chevron + title; brightens on hover. 📋 glyph matches the
+ * emoji vocabulary used elsewhere (R701 Repeater "📋 Copy
+ * stats" + R661 "📋 All MD" + others). */
+.rep-insp-copy {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 0 4px;
+  font-size: 11px;
+  margin-left: 4px;
+  border-radius: 2px;
+  transition: background 100ms ease, color 100ms ease;
+}
+.rep-insp-copy:hover {
+  background: var(--accent-dim, rgba(237, 100, 36, 0.14));
+  color: var(--text);
+}
+/* R811: Burp-identical Inspector "Selection" top panel. Matches
+ * Burp Suite 2026.8's exact silhouette visible in the user's
+ * reference screenshot — "Selection 28 (0x1c)" header + Selected
+ * text box (mono, blue-tinted) + Decoded from dropdown +
+ * decoded preview + Cancel/Apply buttons. */
+.rep-insp-selection .rep-insp-count {
+  color: var(--accent, #ed6424);
+  font-weight: 600;
+}
+.rep-insp-selection-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 10px !important;
+}
+.rep-insp-selection-sub {
+  font-size: 10.5px;
+  color: var(--text-faint);
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+.rep-insp-selection-text,
+.rep-insp-selection-decoded {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 6px 8px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: #87b4ff;
+  word-break: break-all;
+  white-space: pre-wrap;
+  max-height: 100px;
+  overflow-y: auto;
+}
+.rep-insp-selection-decoded {
+  color: var(--text);
+}
+/* R813: editable decoded preview — same chrome as the read-only
+ * variant but with textarea-specific resize + outline rules. */
+textarea.rep-insp-selection-decoded-edit {
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  min-height: 36px;
+  outline: none;
+  color: var(--text);
+}
+textarea.rep-insp-selection-decoded-edit:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(237, 100, 36, 0.15);
+}
+/* R814: Response size + elapsed-time indicator — far-right of the
+ * Response pane bottom bar. Matches Burp Suite 2026.8's exact
+ * silhouette ("646 bytes · 283 millis") visible in the user's
+ * reference screenshot. */
+.rep-resp-size-ms {
+  color: var(--text-dim);
+  font-size: 11px;
+  font-family: var(--mono);
+  margin-left: 4px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+/* R815: Response pane header status pill — matches Burp Suite
+ * 2026.8's "Response (HTTP 403 Forbidden)" title format. Tint
+ * tracks the status class so errors are visible at a glance:
+ * ok 2xx (dim), redirect 3xx (cyan), client-err 4xx (amber),
+ * server-err 5xx (red). */
+.rep-pane-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  margin-left: 8px;
+  font-size: 10.5px;
+  font-family: var(--mono);
+  border-radius: 2px;
+  border: 1px solid currentColor;
+  background: color-mix(in srgb, currentColor 12%, transparent);
+  white-space: nowrap;
+}
+.rep-pane-status-ok { color: #4caf50; }
+.rep-pane-status-redirect { color: #4ab3c6; }
+.rep-pane-status-client-err { color: #e3a74a; }
+.rep-pane-status-server-err { color: #ef4b4b; }
+/* R816: Burp-identical line-number gutter alongside the raw-mode
+ * textarea. Matches Burp Suite 2026.8's reference screenshot
+ * showing numbered lines in Request/Response panes. Gutter is
+ * pointer-events:none so clicks pass through to the editor;
+ * sync-scroll handled by the textarea's onScroll handler.
+ * Monospace, dim foreground, 36px wide. */
+.rep-editor-raw-wrap {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  position: relative;
+}
+.rep-editor-gutter {
+  flex: 0 0 auto;
+  width: 36px;
+  background: var(--bg-elev);
+  border-right: 1px solid var(--border);
+  color: var(--text-faint);
+  font-family: var(--mono);
+  font-size: 12px;
+  /* R817: Match textarea's `padding: 10px` + explicit `line-height:
+   * normal` so line numbers align with the lines in the textarea.
+   * Both use the default browser line-height (~1.2) at 12px =
+   * roughly 14.4px per line; the gutter inherits the same so
+   * numbers stay aligned 1:1 even without an explicit value. */
+  line-height: normal;
+  text-align: right;
+  padding: 10px 6px 10px 2px;
+  user-select: none;
+  pointer-events: none;
+  overflow: hidden;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+.rep-editor-gutter > div {
+  font-variant-numeric: tabular-nums;
+}
+.rep-editor-raw-wrap > textarea.mono {
+  flex: 1;
+  min-width: 0;
+}
+/* R817: Pretty-mode doesn't use the raw-wrap flex container so the
+ * .rep-editor child > first-child selector still catches the pretty-
+ * head. No special rule needed here — just note for future reference. */
+/* R818: Burp-identical JSON syntax tokens in Pretty mode body.
+ * Operators scanning pretty-printed JSON responses want key /
+ * string / number / null / punctuation color differentiation at
+ * a glance. Matches Burp Suite 2026.8's JSON color scheme —
+ * keys cyan, strings orange, numbers purple, keywords magenta,
+ * punctuation dim. */
+.rep-json-key { color: #4ab3c6; }
+.rep-json-str { color: #e8ab6c; }
+.rep-json-num { color: #a476ff; }
+.rep-json-kw { color: #ef7bb0; font-weight: 500; }
+.rep-json-punct { color: var(--text-dim); }
+.rep-json-ws { color: var(--text); }
+.rep-json-plain { color: var(--text); }
+/* R835: Burp-identical XML/HTML syntax coloring in Pretty mode.
+ * Mirrors JSON palette logic — tags blue, attributes cyan,
+ * strings orange (same as JSON for muscle memory), comments
+ * dim italic, PI/CDATA purple. */
+.rep-xml-tag { color: #87b4ff; }
+.rep-xml-attr { color: #4ab3c6; }
+.rep-xml-str { color: #e8ab6c; }
+.rep-xml-comment {
+  color: var(--text-faint);
+  font-style: italic;
+}
+.rep-xml-pi { color: #a476ff; }
+.rep-xml-cdata {
+  color: #a476ff;
+  font-style: italic;
+}
+.rep-xml-text { color: var(--text); }
+/* 🎯 R820 — 29th round-number milestone. Burp-identical pulsing
+ * yellow dot on the "Event log" status-bar button when there are
+ * unread Logger events since the operator's last visit. Matches
+ * the exact silhouette visible in the user's reference screenshot
+ * ("Event log (1) ●"). Pulse animation signals "something new is
+ * here" without being noisy. */
+.status-event-pulse {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #f0c030;
+  margin-left: 6px;
+  box-shadow: 0 0 4px rgba(240, 192, 48, 0.8);
+  animation: status-event-pulse 1.4s ease-in-out infinite;
+}
+.status-event-count {
+  color: #f0c030;
+  font-size: 10.5px;
+  margin-left: 4px;
+  font-variant-numeric: tabular-nums;
+}
+.status-link.has-unread {
+  color: var(--text);
+}
+@keyframes status-event-pulse {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.3); }
+  100% { opacity: 1; transform: scale(1); }
+}
+/* R822: Burp-identical "AI: Disabled ▾" dropdown button on the
+ * far right of the global status bar. Thin pill with purple-
+ * tinted border matching the Burp AI palette, left-side dim dot
+ * indicator, trailing caret. Hover brightens to purple accent. */
+.status-ai-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--bg-elev);
+  border: 1px solid rgba(164, 118, 255, 0.3);
+  color: var(--text-dim);
+  padding: 2px 10px;
+  font-size: 11px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background 120ms, border-color 120ms, color 120ms;
+  font-family: var(--mono);
+}
+.status-ai-indicator:hover {
+  background: rgba(164, 118, 255, 0.1);
+  border-color: #a476ff;
+  color: var(--text);
+}
+.status-ai-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #6b6b6b;
+}
+.status-ai-indicator:hover .status-ai-dot {
+  background: #a476ff;
+  box-shadow: 0 0 4px rgba(164, 118, 255, 0.5);
+}
+.status-ai-caret {
+  font-size: 9px;
+  opacity: 0.7;
+}
+/* R825: Burp-identical functional menubar dropdowns. Click a
+ * MenuBar item (File/Edit/View/Project/Help) to open a dropdown
+ * list of real actions. Dark bordered dropdown + rows with
+ * right-aligned hotkey hints matches Burp Suite 2026.8's menu
+ * style. Separator rules group related actions. */
+.menubar .menu-item {
+  position: relative;
+}
+.menubar .menu-item-open {
+  background: var(--bg-elev);
+}
+/* R905: Burp-density dropdown menus (menubar + Repeater ⚙ settings +
+ * MessageEditor right-click + all FloatingMenu usages). Prior round had
+ * `font-size: 12px` + `padding: 5px 14px` + `box-shadow: 0 4px 16px`
+ * which drifted larger + softer than Burp's install where dropdowns
+ * run at 11px with 3px/12px rows and a crisp 2px/8px shadow. */
+.menu-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  min-width: 200px;
+  z-index: 500;
+  padding: 2px 0;
+  font-size: 11px;
+}
+.menu-dropdown-item {
+  padding: 3px 12px;
+  cursor: pointer;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  justify-content: space-between;
+  white-space: nowrap;
+}
+.menu-dropdown-item:hover {
+  background: var(--accent-dim, rgba(237, 100, 36, 0.14));
+}
+.menu-dropdown-hotkey {
+  color: var(--text-faint);
+  font-size: 10.5px;
+  font-family: var(--mono);
+}
+.menu-dropdown-sep {
+  height: 1px;
+  background: var(--border);
+  margin: 2px 0;
+}
+/* R827: Compact gear button next to Send — matches Burp Suite
+ * 2026.8's reference screenshot where the ⚙ settings cog sits
+ * immediately after Send + before Cancel with minimal padding. */
+.rep-send-gear {
+  padding: 4px 8px !important;
+  min-width: 28px;
+  font-size: 11px;
+}
+/* 🎯 R830 — 30th round-number milestone. Burp-identical Send
+ * button pulse when the active tab has unsent operator edits.
+ * 2s ease-in-out cycle. The box-shadow glow fades in + out so
+ * operators get a gentle "ready to fire" cue without the button
+ * being noisy. Only applies when `.burp-send-pulse` class is set
+ * (host guards with `canSend && hasDirty`). */
+@keyframes burp-send-pulse {
+  0%, 100% { box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25); }
+  50% {
+    box-shadow:
+      0 1px 0 rgba(0, 0, 0, 0.25),
+      0 0 12px rgba(237, 100, 36, 0.55);
+  }
+}
+button.burp-send.burp-send-pulse:not(:disabled) {
+  animation: burp-send-pulse 2s ease-in-out infinite;
+}
+/* R831: Honor OS "reduced motion" preference — stops the pulse +
+ * drawer slide + ✦ idle breathing when operators have requested
+ * less motion. Burp Suite 2026.8 respects the same media query. */
+@media (prefers-reduced-motion: reduce) {
+  button.burp-send.burp-send-pulse:not(:disabled),
+  .burp-ai-drawer,
+  .burp-ai-drawer.burp-ai-drawer-closing,
+  .rep-tab-inflight,
+  .status-event-pulse,
+  .int-status-strip.int-status-running .int-status-pill {
+    animation: none !important;
+  }
+}
+/* R819: Burp-identical textarea selection color matching the exact
+ * blue highlight visible in the user's reference screenshot where
+ * selected text in the Request/Response panes gets a bright cyan-
+ * blue background. Scoped to Repeater textareas + the pretty-body
+ * pre to keep standard form inputs on browser default. */
+.rep-editor textarea.mono::selection,
+.rep-pretty-body ::selection,
+.rep-editor pre::selection,
+.rep-editor pre *::selection {
+  background: rgba(31, 108, 179, 0.55);
+  color: #ffffff;
+}
+.rep-insp-selection-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.rep-insp-selection-label {
+  font-size: 11px;
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+.rep-insp-selection-decoder {
+  flex: 1;
+  font-size: 11px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 2px 4px;
+  min-width: 100px;
+}
+.rep-insp-selection-add {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 1px 7px;
+  font-size: 11px;
+  line-height: 1;
+  border-radius: 2px;
+}
+.rep-insp-selection-add:hover {
+  color: var(--text);
+  border-color: var(--accent);
+}
+.rep-insp-selection-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+.rep-insp-selection-cancel,
+.rep-insp-selection-apply {
+  flex: 1;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 4px 10px;
+  font-size: 11px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background 100ms;
+}
+.rep-insp-selection-cancel:hover:not(:disabled),
+.rep-insp-selection-apply:hover:not(:disabled) {
+  background: var(--border);
+}
+.rep-insp-selection-cancel:disabled,
+.rep-insp-selection-apply:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+/* R782: Burp-identical Collaborator (OOB) empty-state card. Same
+ * visual family as R776 Proxy / R778 History / R781 Scanner empty
+ * states — centered SVG + headline + descriptive subhead + hint
+ * strip. Icon depicts concentric arcs (callback radiating out)
+ * matching Burp's "wait for callback" idiom. */
+.oob-empty-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-dim);
+  max-width: 560px;
+  margin: 24px auto;
+  text-align: center;
+  padding: 0 16px;
+}
+.oob-empty-icon {
+  color: var(--text-dim);
+  opacity: 0.55;
+}
+.oob-empty-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.1px;
+}
+.oob-empty-sub {
+  font-size: 11px;
+  color: var(--text-dim);
+  max-width: 500px;
+  line-height: 1.4;
+}
+.oob-empty-sub b {
+  color: var(--text);
+  font-weight: 600;
+}
+.oob-empty-hints {
+  font-size: 11px;
+  color: var(--text-dim);
+  opacity: 0.85;
+  margin-top: 10px;
+  max-width: 520px;
+  line-height: 1.45;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+.oob-empty-hints b {
+  color: var(--text);
+  font-weight: 600;
+}
+/* R783: Burp-identical Logger empty-state card. Shares the empty-
+ * state family visual language with R776/R778/R781/R782 — centered
+ * SVG + headline + subhead + shortcut hints. SVG = log-row
+ * silhouette with a bullet point on the last line (live cursor
+ * idiom). Fifth and final empty-state card in the family. */
+.log-empty-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-dim);
+  max-width: 560px;
+  margin: 24px auto;
+  text-align: center;
+  padding: 0 16px;
+}
+.log-empty-icon {
+  color: var(--text-dim);
+  opacity: 0.55;
+}
+.log-empty-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.1px;
+}
+.log-empty-sub {
+  font-size: 11px;
+  color: var(--text-dim);
+  max-width: 500px;
+  line-height: 1.4;
+}
+.log-empty-sub b {
+  color: var(--text);
+  font-weight: 600;
+}
+.log-empty-hints {
+  font-size: 11px;
+  color: var(--text-dim);
+  opacity: 0.85;
+  margin-top: 10px;
+  max-width: 520px;
+  line-height: 1.45;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+.log-empty-hints b {
+  color: var(--text);
+  font-weight: 600;
+}
+/* R761: Burp-identical "?" help button on far right of toolbar.
+ * Circular affordance that opens a Repeater keyboard-shortcut
+ * reference dialog. Matches Burp Suite 2026.8's help button
+ * silhouette (small, dim, hover brightens to text). */
+.rep-help-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  font-size: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-left: 4px;
+  line-height: 1;
+}
+.rep-help-btn:hover {
+  color: var(--text);
+  background: var(--bg-elev);
+  border-color: var(--border);
+}
+
+/* R764: Burp-identical tab-search input on the right of the tab
+ * bar. Compact inline input (120px) with a 🔍 leading icon and
+ * conditional × clear button. Filters tab visibility by name/URL
+ * substring. */
+.rep-tab-search {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 4px;
+  margin-right: 8px;
+  background: var(--bg-row);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.rep-tab-search:focus-within { border-color: var(--accent); }
+.rep-tab-search-icon {
+  color: var(--text-faint);
+  font-size: 11px;
+  padding: 0 2px;
+}
+.rep-tab-search input {
+  background: transparent;
+  border: 0;
+  outline: 0;
+  color: var(--text);
+  font-size: 11px;
+  padding: 2px 4px;
+  width: 120px;
+  min-width: 0;
+}
+.rep-tab-search input::placeholder {
+  color: var(--text-faint);
+}
+.rep-tab-search-clear {
+  background: transparent;
+  border: 0;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 0 4px;
+  font-size: 11px;
+  line-height: 1;
+}
+.rep-tab-search-clear:hover { color: var(--text); }
+/* R767: Tab-filter hidden-count feedback — compact pill that
+ * renders when the filter is active + at least one tab is
+ * hidden. Clicking clears the filter. */
+.rep-tab-filter-count {
+  background: var(--amber);
+  color: #000;
+  border: 0;
+  cursor: pointer;
+  padding: 2px 8px;
+  font-size: 10.5px;
+  font-weight: 600;
+  border-radius: 2px;
+  margin-right: 6px;
+  flex-shrink: 0;
+  letter-spacing: 0.3px;
+}
+.rep-tab-filter-count:hover {
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+input, select, textarea {
+  background: var(--bg-row);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 3px 7px;
+  font-size: 12px;
+  font-family: inherit;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px rgba(237, 100, 36, 0.3);
+}
+/* R904: Burp-density checkbox + label. Prior round had 13px checkbox
+ * + 12px label font; Burp's install uses 12px checkbox with 11px label
+ * text — matches the R896 body density + R898 table-row density. */
+input[type="checkbox"] { width: 12px; height: 12px; accent-color: var(--accent); margin: 0 4px 0 0; vertical-align: middle; }
+label { color: var(--text-dim); font-size: 11px; display: inline-flex; align-items: center; gap: 4px; }
+
+textarea, pre, code, .mono {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0;
+}
+
+/* ------------- App shell ----------------------------------------------- */
+.app {
+  display: grid;
+  grid-template-rows: 32px 32px 1fr 24px;
+  height: 100vh;
+  width: 100vw;
+}
+.content-main {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Thin menu/title strip above the main tabs — R900: Milestone density pass
+ * aligning the menubar + toolbar silhouette with Burp Suite 2026.8's
+ * install. Prior round used 12px menubar font with 2px/10px menu-item
+ * padding + 6px overall gap. Burp runs the menubar at 11px with 2px/8px
+ * padding + minimal gap — tighter and closer to the window chrome. */
+.menubar {
+  display: flex;
+  align-items: center;
+  background: var(--bg-raised);
+  border-bottom: 1px solid var(--border);
+  padding: 0 8px;
+  gap: 4px;
+  font-size: 11px;
+}
+.menubar .brand {
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.4px;
+  display: flex; align-items: center; gap: 6px;
+}
+.menubar .brand .dot { color: var(--accent); font-size: 11px; }
+.menubar .menu-item {
+  padding: 2px 8px;
+  cursor: default;
+  color: var(--text-dim);
+}
+.menubar .menu-item:hover { background: var(--bg-elev); color: var(--text); }
+.menubar .spacer { flex: 1; }
+.menubar .right {
+  display: flex; gap: 10px; align-items: center;
+  color: var(--text-dim);
+  font-size: 11px;
+}
+
+/* ------------- Primary horizontal tabs (Burp-style) --------------------
+ * R897: Flattened tab chrome to match Burp Suite 2026.8 silhouette. Prior
+ * rounds carried `border-top-*-radius: 3px` + `font-weight: 600` + 7px/14px
+ * padding + 12px font + `margin: 2px 1px 0` giving the tabs a pill-ish
+ * feel that drifted visually from Burp's hard-edged flush tabs. The real
+ * Burp has 0 radius, flush margins, 11px body font, and uses only the
+ * 2px orange top-stripe to indicate selection — not a bold weight shift
+ * or background highlight. */
+.main-tabs {
+  display: flex;
+  align-items: flex-end;
+  background: var(--bg-raised);
+  border-bottom: 1px solid var(--border);
+  padding: 0;
+  gap: 0;
+  overflow-x: auto;
+}
+.main-tabs .tab {
+  padding: 4px 12px;
+  cursor: pointer;
+  color: var(--text-dim);
+  background: transparent;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  position: relative;
+  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  white-space: nowrap;
+}
+.main-tabs .tab:hover { color: var(--text); background: var(--bg-elev); }
+.main-tabs .tab.active {
+  color: var(--text);
+  background: var(--bg);
+  border-color: var(--border);
+  border-bottom: 1px solid var(--bg);
+  margin-bottom: -1px;
+  font-weight: 500;
+}
+.main-tabs .tab.active::before {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 2px;
+  background: var(--accent);
+}
+.main-tabs .tab .count {
+  background: var(--border);
+  color: var(--text-dim);
+  font-size: 10px;
+  border-radius: 2px;
+  padding: 0 4px;
+}
+.main-tabs .tab.active .count { background: var(--accent-dim); color: var(--accent); }
+
+/* ------------- Content area ------------------------------------------- */
+.content {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.panel {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Secondary tabs INSIDE a tool (e.g. Proxy → Intercept / HTTP history / Options) */
+.sub-tabs {
+  display: flex;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  padding: 0 6px;
+}
+.sub-tabs .tab {
+  padding: 4px 12px;
+  cursor: pointer;
+  color: var(--text-dim);
+  border-bottom: 2px solid transparent;
+  margin-right: 2px;
+  font-size: 11px;
+}
+.sub-tabs .tab:hover { color: var(--text); }
+.sub-tabs .tab.active {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+  font-weight: 500;
+}
+
+/* Toolbar / filter rows — R900: Density pass to Burp's compact toolbar
+ * silhouette. Prior round carried `padding: 5px 10px` + `gap: 8px` which
+ * ran taller than Burp's install, where toolbar rows hold buttons + sep
+ * + search in ~26px total height. */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  background: var(--bg-raised);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.toolbar .sep { width: 1px; height: 14px; background: var(--border); margin: 0 2px; }
+.toolbar .spacer { flex: 1; min-width: 8px; }
+
+/* Dense data table — R898: Row density tightened to Burp Suite 2026.8's
+ * canonical ~18px row height. Prior round had `padding: 3px 8px` + 12px
+ * font which produced ~22px rows — comfortable for a web app but drifting
+ * taller than Burp's install, where History/Logger scan very dense. Also
+ * tightened th padding and selected-row text (Burp uses the accent bg
+ * tint + regular text color, not white — our prior forced-#fff drifted
+ * away). */
+.table {
+  flex: 1;
+  overflow: auto;
+  background: var(--bg);
+}
+.table table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--bg-raised);
+  text-align: left;
+  color: var(--text-dim);
+  font-weight: 600;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  user-select: none;
+  text-transform: none;
+}
+.table th:last-child { border-right: none; }
+.table td {
+  padding: 2px 6px;
+  border-bottom: 1px solid var(--bg-row-alt);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+}
+.table tbody tr:nth-child(even) td { background: var(--bg-row-alt); }
+.table tbody tr:nth-child(odd)  td { background: var(--bg-row); }
+.table tbody tr.selected td { background: var(--accent-dim) !important; color: var(--text); }
+.table tbody tr:hover td { background: var(--bg-elev); }
+.table tbody tr.selected:hover td { background: var(--accent-dim); }
+
+/* R859: Burp-identical HTTP status color palette. Previously 3xx
+   and 4xx shared the amber color — operators couldn't distinguish
+   redirects from client errors at a glance. Burp 2026.8 uses 4
+   distinct colors: 2xx green (OK), 3xx cyan (redirect), 4xx amber
+   (client error), 5xx red (server error). Also added 1xx to the
+   family (dim blue, almost never seen but complete for parity). */
+.status-1xx { color: #6a9fe0; }
+.status-2xx { color: var(--green); font-weight: 600; }
+.status-3xx { color: #4ab3c6; font-weight: 500; }
+.status-4xx { color: var(--amber); font-weight: 500; }
+.status-5xx { color: var(--red); font-weight: 600; }
+
+/* Request/response viewer */
+.viewer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 0;
+  height: 100%;
+  background: var(--bg);
+}
+.viewer > div {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border);
+}
+.viewer > div:last-child { border-right: none; }
+.viewer .header {
+  padding: 5px 10px;
+  background: var(--bg-raised);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-transform: uppercase;
+}
+.viewer pre {
+  margin: 0;
+  padding: 10px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  background: var(--bg);
+  color: var(--text);
+  flex: 1;
+}
+
+/* Empty state */
+.empty {
+  padding: 20px;
+  color: var(--text-dim);
+  text-align: center;
+  font-size: 12px;
+}
+
+/* Status / finding severity colors */
+.severity-info { color: var(--text-dim); }
+.severity-low { color: var(--amber); }
+.severity-medium { color: var(--amber); font-weight: 600; }
+.severity-high { color: var(--red); font-weight: 600; }
+.severity-critical { color: var(--red); font-weight: 700; text-transform: uppercase; }
+
+/* Tab strips for Repeater/Intruder jobs */
+.doc-tabs {
+  display: flex;
+  background: var(--bg-raised);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+.doc-tabs .tab {
+  padding: 5px 12px;
+  cursor: pointer;
+  color: var(--text-dim);
+  border-right: 1px solid var(--border);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.doc-tabs .tab.active {
+  background: var(--bg);
+  color: var(--text);
+  border-top: 2px solid var(--accent);
+  margin-top: -1px;
+}
+.doc-tabs .tab:hover:not(.active) { background: var(--bg-elev); color: var(--text); }
+.doc-tabs .tab .close {
+  color: var(--text-faint);
+  padding: 0 4px;
+  border-radius: 2px;
+}
+.doc-tabs .tab .close:hover { background: var(--border); color: var(--text); }
+.doc-tabs .add {
+  padding: 5px 10px;
+  cursor: pointer;
+  color: var(--text-dim);
+}
+.doc-tabs .add:hover { color: var(--accent); }
+
+/* ------------- Repeater tab strip -----------------------------------
+   Flat, Burp-style tab chips. The old implementation used className
+   `tabs` which had NO matching CSS rule — tabs rendered as unstyled
+   block divs stacked vertically, which is the ugliness the user
+   called out. This block gives the strip its horizontal layout +
+   active/hover states, pins/colors/status glyphs their reserved
+   slots, and the group chip its chevron + accent border. */
+/* R897: Tightened Repeater tab-bar density to match Burp Suite 2026.8
+ * silhouette. Prior round had 28px chip height + 11.5px font which
+ * drifted taller than Burp's compact 24px rows. Burp's numbered Repeater
+ * tabs ("1 / 2 / 3× / 4" in the user-attached screenshot) read as very
+ * dense chips with a 2px accent top-stripe on the active tab. */
+.rep-tabs {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: 0;
+  background: var(--bg-raised);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  min-height: 24px;
+}
+.rep-tabs::-webkit-scrollbar { height: 6px; }
+.rep-tabs::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* One Repeater tab chip. Flat, 11px, dim text until hovered or
+   active. Right-side close × only reveals on hover so a seven-tab
+   strip doesn't look like a bingo card. */
+.rep-tabs .rep-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  min-width: 48px;
+  max-width: 220px;
+  height: 24px;
+  box-sizing: border-box;
+  cursor: pointer;
+  color: var(--text-dim);
+  background: transparent;
+  border: none;
+  border-right: 1px solid var(--border);
+  border-top: 2px solid transparent; /* reserved slot — accent lands here when active */
+  font-size: 11px;
+  font-family: var(--font-sans);
+  white-space: nowrap;
+  user-select: none;
+  position: relative;
+  transition: background 0.08s linear, color 0.08s linear;
+}
+.rep-tabs .rep-tab:hover {
+  background: var(--bg-hover, rgba(255, 255, 255, 0.04));
+  color: var(--text);
+}
+/* R769: Burp-identical tab close × button. Small + dim on
+ * inactive tabs so the tab bar silhouette stays clean; larger
+ * + fully visible on the active tab (matches Burp's "× marks
+ * the active tab" convention). Hover tints red-translucent so
+ * operators see the destructive affordance before clicking. */
+.rep-tabs .rep-tab-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 2px;
+  color: var(--text-faint);
+  font-size: 11px;
+  line-height: 1;
+  padding: 1px 4px;
+  border-radius: 2px;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: background 0.08s, color 0.08s, font-size 0.08s;
+  opacity: 0.55;
+}
+.rep-tabs .rep-tab:hover .rep-tab-close {
+  opacity: 1;
+}
+.rep-tabs .rep-tab-close:hover {
+  background: rgba(224, 68, 68, 0.3);
+  color: var(--text);
+}
+.rep-tabs .rep-tab-close-active {
+  color: var(--text);
+  font-size: 11px;
+  opacity: 1;
+}
+
+/* R748: Burp-identical active-tab visual. Accent top bar
+ * (reserved slot), subtle accent-tinted background bar below the
+ * top accent, bold-ish text, and seamless flow into the Request
+ * pane below. The thin tinted band matches Burp Suite 2026.8's
+ * active-tab silhouette: a readable "this tab is live" signal
+ * without over-decoration. */
+/* R824: Burp-identical active-tab underline — matches the exact
+ * silhouette visible in the user's reference screenshot where the
+ * active tab (3) has a thin accent border-top strip + neutral
+ * background (no gradient). The R748 gradient was close but Burp
+ * uses a flat bar. Transparent background + 2px accent top border
+ * reads as "selected tab" cleanly. */
+.rep-tabs .rep-tab.active {
+  background: linear-gradient(
+    180deg,
+    var(--accent-dim) 0%,
+    var(--accent-dim) 20%,
+    var(--bg) 100%
+  );
+  color: var(--text);
+  border-top-color: var(--accent, #ed6424);
+  font-weight: 500;
+}
+.rep-tabs .rep-tab.active:hover {
+  background: linear-gradient(
+    180deg,
+    var(--accent-dim) 0%,
+    var(--accent-dim) 30%,
+    var(--bg) 100%
+  );
+}
+/* Active tab's left + right edges hug the border strip cleanly */
+.rep-tabs .rep-tab.active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  background: var(--bg);
+}
+
+/* Label truncation so long names don't blow out the strip. */
+.rep-tabs .rep-tab-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1;
+}
+
+/* Pin icon — subtle, aligned, only visible when t.pinned */
+.rep-tabs .rep-tab-pin {
+  font-size: 10px;
+  line-height: 1;
+  color: var(--accent, #ed6424);
+  flex-shrink: 0;
+}
+
+/* Per-tab colour dot (operator-set accent for grouping intent). */
+.rep-tabs .rep-tab-color {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Status glyph: ok / err / inflight / cancelled — right-aligned,
+   tiny, coloured. The RepeaterPanel.tabStatusGlyph helper picks the
+   icon + colour; we only control geometry here. */
+/* R772: Pulsing live-request indicator on the tab chip. Replaces
+ * the static status glyph while a probe is on the wire. Animates
+ * at 1s linear infinite so operators glance → see motion → "oh
+ * that tab is working right now". */
+.rep-tabs .rep-tab-inflight {
+  font-size: 10px;
+  line-height: 1;
+  color: var(--accent);
+  animation: rep-tab-pulse 1s ease-in-out infinite;
+  margin: 0 2px;
+}
+@keyframes rep-tab-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(1.3); }
+}
+
+.rep-tabs .rep-tab-status {
+  font-size: 10px;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-left: 2px;
+}
+
+/* Group chip. Clicking toggles collapse; right-click opens the group
+   context menu. The accent-tinted bg makes grouping intent visible
+   without screaming. */
+.rep-tabs .rep-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  height: 28px;
+  box-sizing: border-box;
+  cursor: pointer;
+  color: var(--text);
+  background: rgba(100, 150, 255, 0.10);
+  border: none;
+  border-right: 1px solid var(--border);
+  border-top: 2px solid rgba(100, 150, 255, 0.5);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  user-select: none;
+  transition: background 0.08s linear;
+}
+.rep-tabs .rep-group:hover {
+  background: rgba(100, 150, 255, 0.18);
+}
+.rep-tabs .rep-group-chevron {
+  color: var(--text-dim);
+  font-size: 9px;
+  width: 10px;
+  text-align: center;
+}
+.rep-tabs .rep-group-count {
+  color: var(--text-dim);
+  font-weight: 400;
+  font-size: 10px;
+  margin-left: 4px;
+}
+
+/* "+ new" affordance. Flat plus icon, blends into the strip until
+   hovered — same shape as the regular tabs so the row stays level. */
+.rep-tabs .rep-add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px 12px;
+  height: 28px;
+  box-sizing: border-box;
+  cursor: pointer;
+  color: var(--text-faint);
+  border: none;
+  border-top: 2px solid transparent;
+  font-size: 12px;
+  font-weight: 300;
+  user-select: none;
+  flex-shrink: 0;
+  transition: color 0.08s linear, background 0.08s linear;
+}
+.rep-tabs .rep-add:hover {
+  color: var(--accent, #ed6424);
+  background: var(--bg-hover, rgba(255, 255, 255, 0.04));
+}
+
+/* Form rows */
+.form-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+}
+.form-row > label { min-width: 150px; color: var(--text-dim); }
+.form-row > input, .form-row > select, .form-row > textarea { flex: 1; }
+
+/* Badge chip */
+.badge {
+  display: inline-block;
+  padding: 1px 6px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--text-dim);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+.badge.accent { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+.badge.red { background: #3a1f22; border-color: #562426; color: var(--red); }
+.badge.green { background: #1f3a24; border-color: #26432b; color: var(--green); }
+
+/* Scrollbars — R906: Flattened to Burp's Swing LAF silhouette. Prior
+ * round had `border-radius: 5px` + `border: 2px solid var(--bg)` which
+ * rendered thumbs as rounded pills with white padding — a web-app
+ * aesthetic. Burp's scrollbars are flat 2px-radius thumbs with no
+ * inner border, using `--bg-raised` track and `--border-strong` thumb. */
+::-webkit-scrollbar { width: 12px; height: 12px; }
+::-webkit-scrollbar-track { background: var(--bg-raised); }
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 2px;
+  border: 2px solid var(--bg-raised);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
+::-webkit-scrollbar-corner { background: var(--bg-raised); }
+
+/* Status bar — R904: Density pass. Prior round had `padding: 0 10px`
+ * + `gap: 16px` which drifted wider than Burp's install where the
+ * bottom status strip has items packed tightly with ~10px gap. */
+.statusbar {
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  gap: 10px;
+  background: var(--bg-raised);
+  border-top: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 11px;
+}
+.statusbar .indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.statusbar .dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--red);
+}
+.statusbar .dot.on { background: var(--green); }
+
+/* Split pane (CSS-only vertical split) */
+.split-v {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  min-height: 0;
+  height: 100%;
+}
+.split-h {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 0;
+  min-width: 0;
+}
+
+/* Toggle button (intercept on/off style) */
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 3px 10px;
+  cursor: pointer;
+  color: var(--text-dim);
+  font-size: 12px;
+  gap: 6px;
+}
+.toggle:hover { border-color: var(--border-strong); color: var(--text); }
+.toggle.on {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+.toggle.on .dot { background: var(--accent); }
+.toggle .dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--text-faint);
+}
+
+/* ------------- Command palette (Ctrl+K) --------------------------------- */
+.palette-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 10vh;
+}
+.palette {
+  width: min(640px, 92vw);
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-raised);
+  border: 1px solid var(--border-strong);
+  border-radius: 2px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+}
+.palette-input {
+  width: 100%;
+  background: transparent;
+  color: var(--text);
+  border: none;
+  border-bottom: 1px solid var(--border);
+  padding: 10px 12px;
+  font-size: 12px;
+  outline: none;
+  font-family: inherit;
+}
+.palette-input::placeholder { color: var(--text-faint); }
+.palette-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 0;
+  min-height: 60px;
+}
+.palette-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 14px;
+  cursor: pointer;
+  gap: 12px;
+  user-select: none;
+}
+.palette-row.active {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+.palette-row.active .palette-group { color: var(--accent); opacity: 0.75; }
+.palette-row:hover { background: var(--bg-elev); }
+.palette-row.active:hover { background: var(--accent-dim); }
+.palette-title { flex: 1; min-width: 0; }
+.palette-title mark {
+  background: transparent;
+  color: var(--accent-hover);
+  font-weight: 600;
+  padding: 0;
+}
+.palette-row.active .palette-title mark { color: var(--text); }
+.palette-meta {
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  color: var(--text-dim);
+  font-size: 11px;
+}
+.palette-group {
+  padding: 1px 7px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--text-dim);
+  letter-spacing: 0.3px;
+}
+.palette-kbd {
+  display: inline-block;
+  padding: 1px 6px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 2px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--text-dim);
+  min-width: 18px;
+  text-align: center;
+}
+.palette-kbd.inline {
+  margin-left: 8px;
+  background: var(--bg);
+}
+.palette-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 14px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--text-faint);
+  background: var(--bg);
+}
+.palette-footer .palette-hint {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+.palette-empty {
+  padding: 12px;
+  text-align: center;
+  color: var(--text-faint);
+  font-style: italic;
+}
+.palette-trigger {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-dim);
+  font-size: 12px;
+}
+.palette-trigger:hover { color: var(--text); }
+
+/* ------------- WebSocket panel ----------------------------------------- */
+.ws-panel {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 0;
+  height: 100%;
+}
+.ws-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 2fr) 3fr;
+  min-height: 0;
+  min-width: 0;
+  gap: 1px;
+  background: var(--border);
+}
+.ws-sessions {
+  background: var(--bg);
+  overflow: auto;
+  min-height: 0;
+}
+.ws-sessions table.rows th {
+  position: sticky;
+  top: 0;
+  background: var(--bg-raised);
+  z-index: 1;
+}
+.ws-messages {
+  background: var(--bg);
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-height: 0;
+  min-width: 0;
+}
+.ws-detail {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-raised);
+  font-size: 12px;
+}
+.ws-detail code {
+  color: var(--accent);
+  font-family: var(--mono);
+}
+.ws-messages-inner {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-height: 0;
+}
+.ws-messages-toolbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 5px 10px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-raised);
+}
+.ws-messages-list {
+  overflow: auto;
+  padding: 4px;
+  min-height: 0;
+}
+.ws-msg {
+  margin: 3px 0;
+  padding: 5px 8px;
+  background: var(--bg-row);
+  border-left: 3px solid var(--border);
+  border-radius: 2px;
+}
+.ws-msg.in  { border-left-color: var(--blue); }
+.ws-msg.out { border-left-color: var(--accent); }
+.ws-msg-head {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-size: 11px;
+  margin-bottom: 3px;
+}
+.ws-msg-head .arrow {
+  display: inline-block;
+  width: 14px;
+  text-align: center;
+  font-weight: 700;
+}
+.ws-msg-head .arrow.in  { color: var(--blue); }
+.ws-msg-head .arrow.out { color: var(--accent); }
+.ws-msg-body {
+  margin: 0;
+  padding: 4px 6px;
+  background: var(--bg);
+  border-radius: 2px;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 200px;
+  overflow: auto;
+  font-size: 11px;
+  color: var(--text);
+}
+.ws-composer {
+  border-top: 1px solid var(--border);
+  background: var(--bg-raised);
+  padding: 8px 10px;
+  display: grid;
+  gap: 6px;
+}
+.ws-composer-head {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+}
+.ws-composer-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.ws-composer-frames {
+  display: grid;
+  gap: 3px;
+  padding: 6px 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+}
+.ws-composer-frame {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.ws-composer-frame button {
+  padding: 1px 6px;
+}
+.ws-composer-result {
+  padding: 4px 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  font-size: 11px;
+}
+
+/* ------------- Session rules / macros panel ---------------------------- */
+.session-panel {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 0;
+  height: 100%;
+}
+.session-grid {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) 2.4fr;
+  min-height: 0;
+  min-width: 0;
+  gap: 1px;
+  background: var(--border);
+}
+.session-list {
+  background: var(--bg);
+  overflow: auto;
+  padding: 6px 0;
+}
+.session-section-title {
+  padding: 8px 10px 4px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-faint);
+}
+.session-row {
+  padding: 6px 10px;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+}
+.session-row:hover { background: var(--bg-row); }
+.session-row.active {
+  background: var(--accent-dim);
+  border-left-color: var(--accent);
+}
+.session-editor {
+  background: var(--bg);
+  overflow: auto;
+  padding: 10px;
+}
+.session-editor-inner {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.session-editor-head {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.session-steps {
+  display: grid;
+  gap: 10px;
+}
+.session-step {
+  display: grid;
+  gap: 6px;
+  padding: 8px;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+}
+.session-step-head {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.kv-editor { display: grid; gap: 4px; }
+.kv-row { display: flex; gap: 6px; align-items: center; }
+
+.session-report {
+  border-top: 1px solid var(--border);
+  background: var(--bg-raised);
+  padding: 8px 10px;
+  max-height: 40vh;
+  overflow: auto;
+}
+.session-report-head {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding-bottom: 6px;
+}
+.session-report-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 12px;
+  min-width: 0;
+}
+.session-report-row {
+  padding: 4px 0;
+  border-bottom: 1px dotted var(--border);
+}
+.session-report-row:last-child { border-bottom: none; }
+
+/* ------------- Dashboard panel ----------------------------------------- */
+.dashboard { height: 100%; display: flex; flex-direction: column; }
+.dash-metric-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  padding: 10px;
+  padding-bottom: 0;
+}
+.dash-metric {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 10px 12px;
+  min-width: 0;
+}
+.dash-metric-label {
+  font-size: 11px;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 4px;
+}
+.dash-metric-value {
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--mono);
+  word-break: break-all;
+}
+.dash-metric-sub {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 4px;
+  word-break: break-all;
+}
+.dash-sev-strip { display: inline-flex; gap: 4px; flex-wrap: wrap; }
+.dash-sev-chip {
+  padding: 1px 6px;
+  border-radius: 2px;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--bg);
+}
+.dash-sev-chip.severity-critical { background: #e13c3c; color: #fff; }
+.dash-sev-chip.severity-high     { background: var(--red); color: #fff; }
+.dash-sev-chip.severity-medium   { background: var(--amber); color: #000; }
+.dash-sev-chip.severity-low      { background: #6b7fbf; color: #fff; }
+.dash-sev-chip.severity-info     { background: var(--bg-elev); color: var(--text-dim); border: 1px solid var(--border); }
+.dash-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  padding: 10px;
+  flex: 1;
+  min-height: 0;
+}
+/* R902: Dashboard card chrome tightened to Burp's hard-edge silhouette.
+ * Prior round had `border-radius: 2px` + `padding: 10px 12px` which
+ * drifted both rounded and generous compared to Burp's install, where
+ * dashboard tiles have hard edges (2px) and 8px padding. */
+.dash-card {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  /* R858: Burp-identical hover elevation on dashboard tiles.
+     Burp 2026.8 dashboard tiles have a subtle hover lift so
+     operators scanning the tile grid get visual feedback on
+     which tile the cursor is over. Soft border-color shift +
+     background-raise + 1px shadow. 0.12s linear transition
+     keeps the interaction crisp without feeling animated. */
+  transition: border-color 0.12s linear, background 0.12s linear, box-shadow 0.12s linear;
+}
+.dash-card:hover {
+  border-color: var(--border-strong, #4a4b50);
+  background: var(--bg-elev);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+}
+.theme-light .dash-card:hover {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+.dash-card.wide { grid-column: 1 / -1; }
+/* R902: Dashboard tile title no longer UPPERCASE. Burp's install uses
+ * mixed-case ("Scope hit rate", "Session summary") with normal weight.
+ * Our prior UPPERCASE 700 + letter-spacing drifted web-app aesthetic. */
+.dash-card-title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 4px;
+  margin-bottom: 6px;
+}
+.dash-footer { padding: 10px; }
+
+/* ------------- Repeater: editor + inspector --------------------------- */
+.rep-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  gap: 1px;
+  background: var(--border);
+}
+/* R733: Three-column mode when the Inspector sidebar is visible.
+ * Request + Response share the available space fluidly; Inspector
+ * takes a dynamic column (default 280px, draggable 220-500px via
+ * R751) on the right. R756: Side rails (26px) always visible on
+ * the far right. So the grid becomes 5 columns:
+ * Request | Response | resizer | Inspector | side-rails */
+.rep-grid.rep-grid--with-inspector {
+  grid-template-columns: 1fr 1fr 3px var(--rep-inspector-width, 280px) 26px;
+}
+.rep-grid:not(.rep-grid--with-inspector) {
+  grid-template-columns: 1fr 1fr 26px;
+}
+/* R788: Focus-pane modifiers — collapse one of the two editor
+ * panes to zero width when the operator wants the whole panel
+ * for the other side. Overrides the base + inspector grids. */
+.rep-grid.rep-grid--focus-request:not(.rep-grid--with-inspector) {
+  grid-template-columns: 1fr 0 26px;
+}
+.rep-grid.rep-grid--focus-request.rep-grid--with-inspector {
+  grid-template-columns: 1fr 0 3px var(--rep-inspector-width, 280px) 26px;
+}
+.rep-grid.rep-grid--focus-response:not(.rep-grid--with-inspector) {
+  grid-template-columns: 0 1fr 26px;
+}
+.rep-grid.rep-grid--focus-response.rep-grid--with-inspector {
+  grid-template-columns: 0 1fr 3px var(--rep-inspector-width, 280px) 26px;
+}
+/* Hide the hidden pane's content fully so the collapsed-to-0
+ * column doesn't bleed through with faint box-shadow or
+ * stray scrollbars. */
+.rep-grid.rep-grid--focus-request > :nth-child(2),
+.rep-grid.rep-grid--focus-response > :nth-child(1) {
+  visibility: hidden;
+  overflow: hidden;
+}
+
+/* R751: Inspector resize gutter — draggable left edge of the
+ * Inspector sidebar. 3px wide, becomes col-resize cursor on hover
+ * + accent-tinted while dragging. */
+.rep-inspector-resizer {
+  background: var(--border);
+  cursor: col-resize;
+  transition: background 0.1s;
+}
+.rep-inspector-resizer:hover {
+  background: var(--accent);
+}
+
+/* R756: Burp-identical vertical side rails on the far right.
+ * Mirrors Burp Suite 2026.8's "Inspector / Notes / Custom actions"
+ * rotated-text tabs that sit on the far right of the Repeater
+ * panel. Three stacked buttons, always visible (even when the
+ * sidebar panel is hidden), with the active one tinted accent.
+ * Clicking a rail opens the Inspector sidebar + scrolls to the
+ * corresponding section. */
+.rep-side-rails {
+  background: var(--bg-raised);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  width: 26px;
+  flex-shrink: 0;
+}
+.rep-side-rail {
+  flex: 0 0 auto;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-dim);
+  cursor: pointer;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 14px 2px;
+  letter-spacing: 1px;
+  transition: background 0.1s, color 0.1s;
+  user-select: none;
+  min-height: 100px;
+}
+.rep-side-rail:hover {
+  background: var(--bg-elev);
+  color: var(--text);
+}
+.rep-side-rail.active {
+  background: var(--accent-dim);
+  color: var(--accent);
+  border-left: 2px solid var(--accent);
+  padding-left: 0;
+}
+
+/* R795: Intruder side rails — aliased to R756 Repeater rails
+ * so the two panels share identical visual language. Mirrors
+ * Burp Suite 2026.8's Intruder layout visible in the user's
+ * reference screenshot (Payloads / Resource pool / Settings
+ * rotated-text buttons on the far right). */
+.int-side-rails {
+  background: var(--bg-raised);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  width: 26px;
+  flex-shrink: 0;
+}
+.int-side-rail {
+  flex: 0 0 auto;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-dim);
+  cursor: pointer;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 14px 2px;
+  letter-spacing: 1px;
+  transition: background 0.1s, color 0.1s;
+  user-select: none;
+  min-height: 100px;
+}
+.int-side-rail:hover {
+  background: var(--bg-elev);
+  color: var(--text);
+}
+.int-side-rail.active {
+  background: var(--accent-dim);
+  color: var(--accent);
+  border-left: 2px solid var(--accent);
+  padding-left: 0;
+}
+
+/* 🎯 R800 — 27th round-number milestone this chunk. Burp AI
+ * drawer chrome — right-side 420px overlay matching Burp Suite
+ * 2026.8's AI companion silhouette visible in the user's
+ * reference screenshot. Purple-tinted header spark + accent
+ * border + mock chat UI (user bubble right, assistant bubble
+ * left with ✦ icon prefix). Prompt input at bottom with
+ * "Analyze" button. */
+.burp-ai-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 420px;
+  background: var(--bg);
+  border-left: 1px solid var(--border);
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  animation: burp-ai-slide-in 180ms ease-out;
+}
+@keyframes burp-ai-slide-in {
+  from { transform: translateX(100%); opacity: 0.4; }
+  to { transform: translateX(0); opacity: 1; }
+}
+/* R823: Burp-identical close animation — the drawer slides OUT
+ * to the right when operator clicks ✕ or presses Esc. React
+ * unmounts instantly by default; we add `.burp-ai-drawer-closing`
+ * class before unmount (via the host panel's setTimeout) so the
+ * CSS animation runs before the DOM removal. Pure CSS — the host
+ * just toggles the class. */
+.burp-ai-drawer.burp-ai-drawer-closing {
+  animation: burp-ai-slide-out 180ms ease-in forwards;
+}
+@keyframes burp-ai-slide-out {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(100%); opacity: 0.3; }
+}
+.burp-ai-head {
+  background: linear-gradient(
+    90deg,
+    rgba(164, 118, 255, 0.14) 0%,
+    rgba(237, 100, 36, 0.08) 100%
+  );
+  border-bottom: 1px solid var(--border);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.burp-ai-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+}
+.burp-ai-spark {
+  color: #a476ff;
+  text-shadow: 0 0 6px rgba(164, 118, 255, 0.5);
+}
+.burp-ai-sub {
+  color: var(--text-faint);
+  font-size: 10.5px;
+}
+.burp-ai-close {
+  background: transparent;
+  border: 0;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 2px;
+  transition: background 0.1s, color 0.1s;
+}
+.burp-ai-close:hover {
+  background: var(--bg-elev);
+  color: var(--text);
+}
+.burp-ai-chat {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.burp-ai-msg {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 90%;
+}
+.burp-ai-msg-user {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+.burp-ai-msg-assistant {
+  align-self: flex-start;
+  align-items: flex-start;
+}
+.burp-ai-msg-role {
+  font-size: 10.5px;
+  color: var(--text-faint);
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+.burp-ai-msg-text {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 8px 11px;
+  font-size: 12px;
+  color: var(--text);
+  white-space: pre-wrap;
+  line-height: 1.4;
+}
+.burp-ai-msg-user .burp-ai-msg-text {
+  background: rgba(237, 100, 36, 0.12);
+  border-color: rgba(237, 100, 36, 0.4);
+}
+.burp-ai-msg-assistant .burp-ai-msg-text {
+  background: rgba(164, 118, 255, 0.08);
+  border-color: rgba(164, 118, 255, 0.3);
+}
+.burp-ai-prompt-row {
+  border-top: 1px solid var(--border);
+  background: var(--bg-elev);
+  padding: 10px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.burp-ai-prompt {
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 10px;
+  font-size: 12px;
+  border-radius: 2px;
+  outline: none;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 28px;
+  max-height: 120px;
+  line-height: 1.4;
+}
+.burp-ai-prompt:focus {
+  border-color: #a476ff;
+  box-shadow: 0 0 0 2px rgba(164, 118, 255, 0.15);
+}
+.burp-ai-send {
+  background: linear-gradient(
+    90deg,
+    rgba(164, 118, 255, 0.9) 0%,
+    rgba(237, 100, 36, 0.9) 100%
+  );
+  color: #fff;
+  border: 0;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: filter 0.1s;
+}
+.burp-ai-send:hover:not(:disabled) {
+  filter: brightness(1.15);
+}
+.burp-ai-send:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+/* R801: Burp AI quick-ask suggestion chips. Shown only when the
+ * conversation is at the opening greeting. Compact pill style
+ * matching the Burp AI purple palette. */
+.burp-ai-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+.burp-ai-suggestions-label {
+  width: 100%;
+  font-size: 10.5px;
+  color: var(--text-faint);
+  letter-spacing: 0.3px;
+  margin-bottom: 2px;
+}
+.burp-ai-chip {
+  background: var(--bg-elev);
+  border: 1px solid rgba(164, 118, 255, 0.3);
+  color: var(--text);
+  padding: 4px 10px;
+  font-size: 11px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background 0.1s, border-color 0.1s;
+}
+.burp-ai-chip:hover {
+  background: rgba(164, 118, 255, 0.14);
+  border-color: #a476ff;
+}
+/* R803: Per-message copy button in Burp AI drawer. Hover-only so
+ * the chat stays clean when not interacting. */
+.burp-ai-msg-copy {
+  background: transparent;
+  border: 0;
+  color: var(--text-faint);
+  cursor: pointer;
+  padding: 0 4px;
+  font-size: 11px;
+  margin-left: 4px;
+  opacity: 0;
+  transition: opacity 0.1s, color 0.1s;
+}
+.burp-ai-msg:hover .burp-ai-msg-copy {
+  opacity: 0.7;
+}
+.burp-ai-msg-copy:hover {
+  opacity: 1 !important;
+  color: var(--text);
+}
+/* R804: ✨ Analyze button in Response pane bottom bar — compact
+ * purple-tinted pill matching the Burp AI drawer palette.
+ * Hover-brightens with the Burp AI purple accent. */
+.rep-ai-foot-btn {
+  background: rgba(164, 118, 255, 0.08);
+  border: 1px solid rgba(164, 118, 255, 0.3);
+  color: var(--text);
+  padding: 2px 8px;
+  font-size: 11px;
+  border-radius: 2px;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-left: 4px;
+  transition: background 100ms, border-color 100ms;
+}
+.rep-ai-foot-btn:hover {
+  background: rgba(164, 118, 255, 0.18);
+  border-color: #a476ff;
+}
+/* R805: Burp-identical "unsaved edits" tab-chip edge indicator.
+ * Thin left-edge accent border on the active tab when its raw
+ * differs from the saved template — mirrors Burp Suite 2026.8's
+ * convention for signalling pending operator edits. */
+.rep-tab.rep-tab-dirty {
+  box-shadow: inset 2px 0 0 var(--accent, #ed6424);
+}
+/* R807: "AI insight" ✦ indicator — tiny purple sparkle on tab
+ * chips whose Notes contain a Burp AI chat save (R802). */
+.rep-tab-ai {
+  color: #a476ff;
+  font-size: 10px;
+  margin-left: 2px;
+  text-shadow: 0 0 4px rgba(164, 118, 255, 0.5);
+}
+/* 🎯 R810 — 28th round-number milestone. Response-time sparkline
+ * on tab chips: 4-char Unicode block-element sequence encoding
+ * the trend over the last 4 sends. Compact (letter-spacing: -1px)
+ * so it fits beside the chip badge row. */
+.rep-tab-sparkline {
+  color: var(--text-dim);
+  font-size: 11px;
+  letter-spacing: -1px;
+  margin-left: 2px;
+  font-family: var(--font-mono);
+  opacity: 0.75;
+}
+.rep-tab.active .rep-tab-sparkline {
+  color: var(--text);
+  opacity: 1;
+}
+
+/* R749 (legacy): Vertical "Inspector" rail — a narrow 22px right-
+ * edge strip with rotated "Inspector" text that becomes the
+ * sidebar's open affordance when it's collapsed. **Superseded by
+ * R756 side rails** which are always visible; the legacy rail is
+ * kept for backwards compatibility but no longer rendered. */
+.rep-grid:not(.rep-grid--with-inspector) {
+  grid-template-columns: 1fr 1fr;
+}
+.rep-inspector-rail {
+  display: none;
+}
+
+/* R733: Inspector sidebar — Burp Suite 2026.8 parity. Collapsible
+ * right-side panel showing parsed request/response structure as a
+ * series of accordion sections (Request attributes / query params /
+ * body params / cookies / headers / response headers). The sidebar
+ * header carries the pane title + close button; each section has a
+ * header with a chevron + count badge and an expanded content body
+ * showing key/value pairs. */
+.rep-inspector {
+  background: var(--bg-raised);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+  min-height: 0;
+  border-left: 1px solid var(--border);
+}
+.rep-inspector-head {
+  display: flex;
+  align-items: center;
+  padding: 5px 10px;
+  background: var(--bg-elev);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.rep-inspector-head strong {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  flex: 1;
+}
+.rep-inspector-head .rep-inspector-close {
+  background: transparent;
+  border: 0;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 2px 6px;
+  font-size: 11px;
+}
+.rep-inspector-head .rep-inspector-close:hover { color: var(--text); }
+/* R757: Burp-identical Inspector empty state. Mirrors the exact
+ * silhouette from the Burp Suite 2026.8 reference screenshot:
+ * centered detective-hat icon + bold "Inspector" title + muted
+ * description paragraph + "Learn more" accent button. Renders
+ * when there's no activeTab or when both request + response are
+ * empty — the "nothing to inspect yet" state. */
+.rep-inspector-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 14px;
+  text-align: center;
+  overflow: hidden;
+}
+.rep-inspector-empty-icon {
+  color: var(--text-faint);
+  margin-bottom: 16px;
+  opacity: 0.75;
+}
+.rep-inspector-empty-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 10px;
+  letter-spacing: 0.3px;
+}
+.rep-inspector-empty-desc {
+  font-size: 11px;
+  color: var(--text-dim);
+  line-height: 1.4;
+  margin-bottom: 14px;
+  max-width: 240px;
+}
+.rep-inspector-empty-learn {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 5px 18px;
+  font-size: 11px;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: background 0.1s, border-color 0.1s;
+}
+.rep-inspector-empty-learn:hover {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+/* R746: Inspector filter input bar — sits below the sidebar header
+ * and above the sections. Grep by substring across every section's
+ * keys + values. Shows a clear × button when non-empty. */
+.rep-inspector-filter {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  background: var(--bg-raised);
+  border-bottom: 1px solid var(--border);
+  gap: 4px;
+}
+.rep-inspector-filter input {
+  flex: 1;
+  min-width: 0;
+  background: var(--bg-row);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 3px 7px;
+  font-size: 11px;
+  border-radius: 2px;
+}
+.rep-inspector-filter input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px rgba(237, 100, 36, 0.3);
+}
+.rep-inspector-filter .rep-inspector-filter-clear {
+  background: transparent;
+  border: 0;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 2px 6px;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+.rep-inspector-filter .rep-inspector-filter-clear:hover { color: var(--text); }
+.rep-inspector-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.rep-inspector-body::-webkit-scrollbar { width: 8px; }
+.rep-inspector-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* Accordion section */
+.rep-insp-section {
+  border-bottom: 1px solid var(--border);
+}
+.rep-insp-section-head {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  cursor: pointer;
+  user-select: none;
+  background: var(--bg-raised);
+  transition: background 0.08s linear;
+}
+.rep-insp-section-head:hover { background: var(--bg-elev); }
+.rep-insp-section-head .rep-insp-chevron {
+  font-size: 9px;
+  color: var(--text-dim);
+  margin-right: 6px;
+  width: 10px;
+  display: inline-block;
+  text-align: center;
+  flex-shrink: 0;
+}
+.rep-insp-section-head .rep-insp-title {
+  flex: 1;
+  font-size: 11px;
+  color: var(--text);
+  font-weight: 500;
+}
+.rep-insp-section-head .rep-insp-count {
+  font-size: 11px;
+  color: var(--text-dim);
+  background: var(--bg-elev);
+  padding: 1px 6px;
+  border-radius: 2px;
+  min-width: 18px;
+  text-align: center;
+}
+.rep-insp-section-body {
+  padding: 4px 0;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+}
+.rep-insp-section-body .rep-insp-row {
+  display: flex;
+  padding: 3px 10px;
+  gap: 8px;
+  font-size: 11px;
+  font-family: var(--mono);
+  border-bottom: 1px dotted transparent;
+}
+.rep-insp-section-body .rep-insp-row:nth-child(odd) {
+  background: var(--bg-row-alt);
+}
+.rep-insp-section-body .rep-insp-row:hover {
+  background: var(--accent-dim);
+}
+.rep-insp-section-body .rep-insp-key {
+  color: var(--text-dim);
+  flex-shrink: 0;
+  min-width: 80px;
+  max-width: 40%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rep-insp-section-body .rep-insp-val {
+  color: var(--text);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.rep-insp-empty {
+  padding: 6px 10px;
+  font-size: 11px;
+  color: var(--text-faint);
+  font-style: italic;
+}
+/* R738: Notes section textarea — free-form note bound to the
+ * active tab's `comment` field. Debounced save fires 400ms after
+ * the last keystroke. */
+.rep-insp-notes-body {
+  padding: 6px 8px;
+}
+.rep-insp-notes-area {
+  width: 100%;
+  min-height: 90px;
+  resize: vertical;
+  background: var(--bg-row);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 4px 6px;
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.4;
+}
+.rep-insp-notes-area:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px rgba(237, 100, 36, 0.3);
+}
+
+/* R734: Repeater status bar — Burp-identical bottom-row display
+ * showing live stats from the active tab's last send: status
+ * code tinted by severity, response size in human units, elapsed
+ * ms, content-type. Mirrors Burp's bottom-right status display. */
+.rep-status-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 3px 10px;
+  background: var(--bg-raised);
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  font-family: var(--mono);
+  color: var(--text-dim);
+  flex-shrink: 0;
+  min-height: 22px;
+}
+.rep-status-bar .rep-status-code {
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 2px;
+  background: var(--bg-elev);
+  color: var(--text);
+}
+.rep-status-bar .rep-status-code.success { color: var(--green); }
+.rep-status-bar .rep-status-code.redirect { color: var(--blue); }
+.rep-status-bar .rep-status-code.client-error { color: var(--amber); }
+.rep-status-bar .rep-status-code.server-error { color: var(--red); }
+.rep-status-bar .rep-status-code.err { color: var(--red); background: #3a1f22; }
+.rep-status-bar .rep-status-sep {
+  color: var(--text-faint);
+  user-select: none;
+}
+.rep-status-bar .rep-status-item {
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+.rep-status-bar .rep-status-item strong {
+  color: var(--text);
+  font-weight: 500;
+  margin-right: 3px;
+}
+.rep-status-bar .rep-status-spacer { flex: 1; }
+.rep-status-bar .rep-status-empty {
+  color: var(--text-faint);
+  font-style: italic;
+}
+
+/* R913: .rep-inspector-toggle removed — toggle buttons stripped
+ * from toolbar to match Burp's Repeater layout. */
+.rep-pane {
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+/* R901: Burp-density pane headers. Prior round had `padding: 5px 10px`
+ * + `min-height: 28px` which drifted taller than Burp's install where
+ * the pane headers run tight at 22-24px. */
+.rep-pane-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  background: var(--bg-raised);
+  border-bottom: 1px solid var(--border);
+  min-height: 24px;
+}
+/* R758: Burp-identical pane header right-side icon buttons.
+ * Small 11px icons that match Burp Suite 2026.8's "⏸ ■ ▶" render
+ * controls on the Response pane and the "🚫 📑 ↵ ≡" quartet on
+ * both panes. Flat background, dim text, hover brightens to text. */
+.rep-pane-icon {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 1px 7px;
+  font-size: 11px;
+  border-radius: 2px;
+  font-family: inherit;
+  line-height: 1.4;
+}
+.rep-pane-icon:hover {
+  color: var(--text);
+  background: var(--bg-elev);
+  border-color: var(--border);
+}
+.rep-pane-icon.active {
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+/* R759: Line-wrap mode on the raw textarea. Changes
+ * `white-space` from `pre` (hard breaks + horizontal scroll) to
+ * `pre-wrap` (soft-wrap at word boundaries, no horizontal
+ * overflow). Also hides the horizontal scrollbar when wrap is
+ * active. */
+textarea.mono.rep-editor-wrap {
+  white-space: pre-wrap;
+  word-break: break-all;
+  overflow-x: hidden;
+}
+
+/* R768: Burp-identical Intruder attack status strip. Lives at the
+ * top of the Intruder panel showing status pill + progress bar +
+ * progress numeric + results count + job id. Always visible so
+ * operators get instant feedback on attack state. */
+.int-status-strip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 8px;
+  background: var(--bg-raised);
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--text-dim);
+  flex-shrink: 0;
+  min-height: 24px;
+}
+.int-status-pill {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 2px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  flex-shrink: 0;
+}
+.int-status-pill.idle {
+  background: var(--bg-elev);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+}
+.int-status-pill.running {
+  background: var(--accent);
+  color: var(--accent-text);
+  animation: int-pulse 1.5s ease-in-out infinite;
+}
+@keyframes int-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+.int-status-pill.paused {
+  background: var(--amber);
+  color: #000;
+}
+.int-status-pill.done {
+  background: var(--green);
+  color: #000;
+}
+.int-status-pill.cancelled {
+  background: var(--text-faint);
+  color: var(--bg);
+}
+.int-status-pill.failed {
+  background: var(--red);
+  color: #fff;
+}
+.int-status-progress {
+  flex: 0 1 200px;
+  height: 6px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+  min-width: 100px;
+}
+.int-status-progress-fill {
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--accent) 0%,
+    var(--accent-hover) 100%
+  );
+  transition: width 0.15s ease-out;
+}
+.int-status-item {
+  white-space: nowrap;
+  font-family: var(--mono);
+  font-size: 11px;
+}
+.int-status-spacer { flex: 1; }
+.int-status-jobid {
+  color: var(--text-faint);
+  font-size: 10.5px;
+}
+
+/* R779: Burp-identical Attack type pill selector. Replaces the
+ * <select> dropdown with a canonical 5-pill horizontal row.
+ * Burp Suite 2026.8's single most prominent Intruder control —
+ * operators pick the attack strategy once and see it reinforced
+ * every time they glance at the panel. Pills reuse the "chip"
+ * silhouette family: 4px vertical padding, 10px horizontal,
+ * 1px border, 2px border-radius, mono font at 12px. Active
+ * state swaps to accent-dim background + accent border + bold
+ * white text so the current pick jumps off the row. Inactive
+ * pills hover-brighten to the subtle accent-dim-but-ghosted
+ * fill so the row stays discoverable without being noisy. */
+.int-attack-pills {
+  display: inline-flex;
+  gap: 2px;
+  margin-left: 4px;
+  flex-wrap: wrap;
+}
+.int-attack-pill {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 3px 10px;
+  font-size: 12px;
+  font-family: var(--mono);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+.int-attack-pill:hover:not(.active) {
+  background: rgba(237, 100, 36, 0.08);
+  color: var(--text);
+  border-color: rgba(237, 100, 36, 0.4);
+}
+.int-attack-pill.active {
+  background: var(--accent-dim, rgba(237, 100, 36, 0.18));
+  color: var(--text);
+  border-color: var(--accent, #ed6424);
+  font-weight: 600;
+}
+/* 🎯 R780 — 25th round-number milestone. Burp-identical Intruder
+ * "Attack preview" summary strip. Shows under the Attack-type pills
+ * so operators see "here's what's about to happen" before clicking
+ * Start. Mode-tinted left border signals the mode class:
+ *   neutral (Sniper / Battering Ram) — standard --accent border
+ *   cyan (Pitchfork) — row-align hint
+ *   amber (Cluster Bomb) — combinatorial-blow-up warning
+ *   dim (Null) — not an actual attack, just load test
+ * Thin 20px row with a mono-font chip row + flexible hint span. */
+.int-attack-preview {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-left-width: 3px;
+  border-radius: 2px;
+  padding: 4px 10px;
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--text-dim);
+  font-family: var(--mono);
+}
+.int-attack-preview-neutral { border-left-color: var(--accent, #ed6424); }
+.int-attack-preview-cyan { border-left-color: #4ab3c6; }
+.int-attack-preview-amber { border-left-color: #e3a74a; }
+.int-attack-preview-dim { border-left-color: var(--border); opacity: 0.75; }
+.int-attack-preview-mode {
+  color: var(--text);
+  font-weight: 600;
+}
+.int-attack-preview-sep {
+  color: var(--text-faint);
+  opacity: 0.6;
+}
+.int-attack-preview-pos,
+.int-attack-preview-sets,
+.int-attack-preview-iter {
+  color: var(--text);
+}
+.int-attack-preview-spacer {
+  flex: 1;
+  min-width: 10px;
+}
+.int-attack-preview-hint {
+  color: var(--text-dim);
+  font-size: 11px;
+  font-family: inherit;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 60%;
+}
+
+/* R760: Burp-identical "Ready" status strip at the bottom of the
+ * Repeater panel. Mirrors Burp Suite 2026.8's global bottom bar.
+ * Thin 20px row with left-aligned status + right-aligned tab info. */
+.rep-ready-strip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 2px 10px;
+  background: var(--bg-elev);
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--text-dim);
+  flex-shrink: 0;
+  min-height: 20px;
+  user-select: none;
+}
+.rep-ready-strip .rep-ready-status {
+  color: var(--text);
+  font-weight: 500;
+}
+.rep-ready-strip .rep-ready-spacer { flex: 1; }
+.rep-ready-strip .rep-ready-tab {
+  color: var(--text-faint);
+  font-family: var(--mono);
+  font-size: 10.5px;
+}
+
+/* R744 → R901: Burp pane title styling. R744 set 13px/600, but Burp's
+ * install renders "Request" / "Response" labels at 11px semibold which
+ * matches the body density established by R896. The 13px font drifted
+ * larger than Burp — now matches. */
+.rep-pane-head strong {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.1px;
+}
+
+/* R745: Burp-identical pane bottom bar — mirrors Burp Suite 2026.8's
+ * Request / Response pane bottom row that shows gear + search + char
+ * counts + Selection info + highlights. Our version shows char + line
+ * counts + search affordance + match counter + current mode. */
+.rep-pane-foot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 3px 8px;
+  background: var(--bg-raised);
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  font-family: var(--mono);
+  color: var(--text-dim);
+  flex-shrink: 0;
+  min-height: 22px;
+}
+.rep-pane-foot-btn {
+  background: transparent;
+  border: 0;
+  color: var(--text-dim);
+  padding: 2px 6px;
+  font-size: 11px;
+  cursor: pointer;
+  border-radius: 2px;
+  font-family: var(--mono);
+}
+.rep-pane-foot-btn:hover:not(:disabled) { color: var(--text); background: var(--bg-elev); }
+.rep-pane-foot-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.rep-pane-foot-search {
+  background: var(--bg-row);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 2px 7px;
+  font-size: 11px;
+  width: 140px;
+  min-width: 0;
+  border-radius: 2px;
+  font-family: var(--mono);
+}
+.rep-pane-foot-search:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px rgba(237, 100, 36, 0.3);
+}
+.rep-pane-foot-search::placeholder { color: var(--text-faint); }
+.rep-pane-foot-item { white-space: nowrap; }
+.rep-pane-foot-sep { color: var(--text-faint); user-select: none; }
+.rep-pane-foot-spacer { flex: 1; }
+.rep-pane-foot-mode {
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--accent);
+  font-size: 10px;
+  padding: 1px 6px;
+  background: var(--accent-dim);
+  border-radius: 2px;
+}
+.rep-pane-info {
+  flex: 1;
+  text-align: right;
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rep-mode {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.rep-mode-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  padding: 2px 10px;
+  cursor: pointer;
+  font-size: 11px;
+  border-radius: 0;
+}
+.rep-mode-btn + .rep-mode-btn { border-left: 1px solid var(--border); }
+.rep-mode-btn:hover { color: var(--text); background: var(--bg); }
+/* R747: Burp-identical Pretty/Raw/Hex tab active state —
+ * subtle bottom border tint instead of fill. Burp Suite 2026.8
+ * uses a thin coloured bar under the active tab, no background
+ * fill. Keeps the tab strip visually flat + matches the pane
+ * header silhouette exactly. */
+.rep-mode-btn.active {
+  background: transparent;
+  color: var(--accent);
+  font-weight: 600;
+  box-shadow: inset 0 -2px 0 0 var(--accent);
+}
+.rep-mode-btn.active:hover {
+  background: transparent;
+  color: var(--accent-hover);
+}
+.rep-insp-toggle {
+  padding: 2px 8px;
+  font-size: 11px;
+}
+.rep-insp-toggle.on {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.rep-pane-body {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}
+.rep-editor {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+.rep-editor textarea {
+  flex: 1;
+  border: none;
+  border-radius: 0;
+  background: var(--bg);
+  color: var(--text);
+  padding: 10px;
+  resize: none;
+  font-family: var(--mono);
+  font-size: 12px;
+  outline: none;
+}
+.rep-editor .rep-head {
+  margin: 0;
+  padding: 8px 10px;
+  background: var(--bg-row);
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--text-dim);
+  max-height: 40%;
+  overflow: auto;
+  white-space: pre-wrap;
+}
+.rep-editor .rep-pretty-body {
+  margin: 0;
+  padding: 10px;
+  flex: 1;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 12px;
+}
+.rep-editor .rep-hex {
+  margin: 0;
+  padding: 10px;
+  flex: 1;
+  overflow: auto;
+  font-size: 11px;
+  background: var(--bg);
+  white-space: pre;
+}
+.rep-inspector {
+  width: 300px;
+  border-left: 1px solid var(--border);
+  background: var(--bg-raised);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 2px 0 10px;
+}
+.insp-section { border-bottom: 1px solid var(--border); }
+.insp-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-dim);
+}
+.insp-head:hover { color: var(--text); background: var(--bg); }
+.insp-caret { width: 10px; }
+.insp-title { flex: 1; }
+.insp-count {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 0 5px;
+  font-size: 10px;
+  color: var(--text);
+}
+.insp-body { padding: 2px 10px 6px; }
+.insp-kv {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 6px;
+  padding: 2px 0;
+  font-size: 11px;
+  overflow: hidden;
+}
+.insp-k {
+  color: var(--text-dim);
+  font-family: var(--mono);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.insp-v {
+  color: var(--text);
+  font-family: var(--mono);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ------------- Match/Replace pane -------------------------------------- */
+.mr-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+.mr-grid {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  flex: 1;
+  min-height: 0;
+  gap: 1px;
+  background: var(--border);
+}
+.mr-table {
+  background: var(--bg);
+  overflow: auto;
+  min-height: 0;
+}
+.mr-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.mr-table th,
+.mr-table td {
+  padding: 4px 8px;
+  font-size: 12px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+.mr-table thead th {
+  background: var(--bg-raised);
+  color: var(--text-dim);
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.mr-table tbody tr { cursor: pointer; }
+.mr-table tbody tr:hover { background: var(--bg-row); }
+.mr-table tbody tr.selected {
+  background: var(--accent-dim);
+}
+.mr-ellipsis {
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mr-editor {
+  background: var(--bg-raised);
+  overflow-y: auto;
+  padding: 10px 12px;
+}
+.mr-editor-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ghost.danger { color: var(--red); }
+.ghost.danger:hover { background: rgba(239, 75, 75, 0.12); }
+
+/* ------------- Intercept rules editor ---------------------------------- */
+.irule-panel {
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-raised);
+  max-height: 45vh;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.irule-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.irule-body {
+  overflow: auto;
+  min-height: 0;
+}
+.irule-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.irule-table th,
+.irule-table td {
+  padding: 4px 8px;
+  font-size: 11px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: middle;
+}
+.irule-table thead th {
+  background: var(--bg);
+  color: var(--text-dim);
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+}
+.irule-table select,
+.irule-table input[type="text"],
+.irule-table input:not([type]) {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 2px 4px;
+  font-size: 11px;
+  font-family: var(--mono);
+}
+
+/* ------------- Organizer panel (with Collections sidebar) --------------- */
+.org-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+.org-grid {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  flex: 1;
+  min-height: 0;
+  gap: 1px;
+  background: var(--border);
+}
+.org-sidebar {
+  background: var(--bg);
+  overflow-y: auto;
+  padding: 4px 0;
+}
+.org-sidebar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px 4px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-dim);
+}
+.org-coll {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px;
+  cursor: pointer;
+  font-size: 11px;
+}
+.org-coll:hover { background: var(--bg-row); }
+.org-coll.active {
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-weight: 600;
+}
+.org-coll-icon { width: 16px; text-align: center; }
+.org-coll-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.org-coll-count {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 0 5px;
+  font-size: 10px;
+  color: var(--text-dim);
+}
+.org-coll.active .org-coll-count { color: var(--accent); border-color: var(--accent); }
+.org-coll-divider {
+  padding: 8px 12px 4px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-faint);
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
+}
+.org-main {
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+}
+.org-items {
+  width: 420px;
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  min-height: 0;
+}
+.org-item {
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+.org-item:hover { background: var(--bg-row); }
+.org-item.active { background: var(--accent-dim); }
+.org-item-head { display: flex; gap: 6px; align-items: center; }
+.org-detail {
+  flex: 1;
+  padding: 12px;
+  overflow: auto;
+  min-width: 0;
+}
+
+/* ------------- Discover (Getting Started) panel ------------------------ */
+.discover-root {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 14px 20px 28px;
+  background: var(--bg);
+}
+.discover-title {
+  text-align: center;
+  margin: 8px 0 4px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+}
+.discover-sub {
+  text-align: center;
+  margin: 0 auto 24px;
+  max-width: 720px;
+  color: var(--text-dim);
+  font-size: 11px;
+  line-height: 1.4;
+}
+.discover-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 12px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.discover-card {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 10px 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color 120ms, transform 120ms;
+}
+.discover-card:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+}
+.discover-art {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  height: 110px;
+  padding: 6px;
+}
+.discover-card h3 {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text);
+  font-weight: 600;
+}
+.discover-card p {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 11px;
+  line-height: 1.4;
+  flex: 1;
+}
+.discover-cta {
+  align-self: flex-start;
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  padding: 4px 12px;
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 12px;
+}
+.discover-cta:hover { background: var(--accent); color: var(--accent-text); }
+.discover-footer {
+  max-width: 1200px;
+  margin: 14px auto 0;
+  padding: 10px 14px;
+  border: 1px dashed var(--border);
+  border-radius: 2px;
+  color: var(--text-faint);
+  font-size: 12px;
+  text-align: center;
+}
+.discover-footer kbd {
+  display: inline-block;
+  padding: 1px 6px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 2px;
+  font-family: inherit;
+  font-size: 11px;
+  color: var(--text);
+}
+
+/* ------------- PoC modal (CSRF / Clickjacking) ------------------------ */
+.poc-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: grid;
+  place-items: center;
+  z-index: 2000;
+}
+.poc-dialog {
+  width: min(900px, 92vw);
+  height: min(620px, 85vh);
+  background: var(--bg-raised);
+  border: 1px solid var(--border-strong);
+  border-radius: 2px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+}
+.poc-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--bg-elev);
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+}
+.poc-sub {
+  color: var(--text-faint);
+  font-size: 11px;
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace);
+}
+.poc-body {
+  flex: 1;
+  margin: 0;
+  padding: 10px 14px;
+  overflow: auto;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1.45;
+  white-space: pre;
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace);
+}
+.poc-foot {
+  padding: 7px 12px;
+  background: var(--bg-elev);
+  border-top: 1px solid var(--border);
+  color: var(--text-faint);
+  font-size: 11px;
+}
+.poc-foot kbd {
+  display: inline-block;
+  padding: 0 5px;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--text-dim);
+  font-size: 11px;
+}
+
+/* ------------- MCP server panel --------------------------------------- */
+.mcp-root {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 14px 20px 28px;
+  background: var(--bg);
+}
+.mcp-title {
+  margin: 4px 0 2px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.mcp-sub {
+  margin: 0 0 10px;
+  color: var(--text-dim);
+  font-size: 11px;
+  line-height: 1.4;
+}
+.mcp-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  max-width: 1200px;
+}
+.mcp-card {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 10px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.mcp-card-wide { grid-column: 1 / -1; }
+.mcp-card h3 {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.mcp-card .mcp-blurb {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 11px;
+  line-height: 1.4;
+}
+.mcp-kv {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 4px 10px;
+  font-size: 12px;
+}
+.mcp-kv > div { display: contents; }
+.mcp-kv > div > span {
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  font-size: 10.5px;
+  padding-top: 2px;
+}
+.mcp-kv > div > code {
+  background: transparent;
+  color: var(--text);
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mcp-cmd {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 8px 10px;
+  margin: 0;
+  font-size: 11px;
+  color: var(--text);
+  overflow-x: auto;
+  white-space: pre;
+  max-height: 240px;
+  overflow-y: auto;
+}
+.mcp-stderr {
+  color: var(--text-dim);
+  margin-top: 8px;
+}
+.mcp-tools {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.mcp-tools th, .mcp-tools td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+.mcp-tools th {
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  font-size: 10.5px;
+  font-weight: 600;
+  background: var(--bg-elev);
+}
+.mcp-tools tr:last-child td { border-bottom: none; }
+.pad { padding: 12px; color: var(--text-dim); }
+
+/* ------------- Target → Issues sub-tab --------------------------------- */
+.issues-grid {
+  display: grid;
+  grid-template-columns: minmax(540px, 1fr) 460px;
+  gap: 1px;
+  background: var(--border);
+  flex: 1;
+  min-height: 0;
+}
+.issues-list {
+  background: var(--bg);
+  overflow: auto;
+}
+.issues-list table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.issues-list th {
+  position: sticky;
+  top: 0;
+  background: var(--bg-elev);
+  padding: 5px 8px;
+  text-align: left;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  font-size: 10.5px;
+  letter-spacing: 0.4px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+  z-index: 1;
+}
+.issues-list td {
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.issues-list tr { cursor: pointer; }
+.issues-list tr:hover td { background: var(--bg-row); }
+.issues-list tr.selected td { background: var(--accent-dim); }
+
+.sev-chip {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 2px;
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: lowercase;
+  min-width: 48px;
+  text-align: center;
+}
+.sev-chip.big {
+  padding: 3px 10px;
+  font-size: 11px;
+}
+.sev-chip.severity-critical { background: #e13c3c; color: #fff; }
+.sev-chip.severity-high     { background: var(--red); color: #fff; }
+.sev-chip.severity-medium   { background: var(--amber); color: #1a1206; }
+.sev-chip.severity-low      { background: #6b7fbf; color: #fff; }
+.sev-chip.severity-info     {
+  background: var(--bg-elev);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+}
+
+/* ----- Burp-style chip filter strip under the Issues toolbar ----- */
+/* Each row has a tiny label on the left, then clickable chips with  */
+/* an inline count badge. .off is the muted inactive state, .on is   */
+/* the full-colour active state. Status chips use a neutral palette; */
+/* severity chips reuse the same tones as .sev-chip for consistency. */
+.issue-filter-strip {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 5px 8px 6px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+.issue-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 22px;
+  flex-wrap: wrap;
+}
+.issue-filter-label {
+  width: 54px;
+  font-size: 10px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+.issue-sev-chip,
+.issue-status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 1px 4px 1px 7px;
+  border-radius: 2px;
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 15px;
+  cursor: pointer;
+  user-select: none;
+  background: var(--bg-elev);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  transition: background 0.1s, border-color 0.1s, color 0.1s, opacity 0.1s;
+}
+.issue-sev-chip .chip-label,
+.issue-status-chip .chip-label { text-transform: lowercase; }
+.issue-sev-chip .chip-count,
+.issue-status-chip .chip-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 15px;
+  padding: 0 4px;
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.28);
+  color: inherit;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+.issue-sev-chip:hover,
+.issue-status-chip:hover { border-color: var(--accent); }
+.issue-sev-chip.off,
+.issue-status-chip.off { opacity: 0.72; }
+.issue-sev-chip.off:hover,
+.issue-status-chip.off:hover { opacity: 1; }
+/* Active severity chips take the full-colour fill from .sev-chip. */
+.issue-sev-chip.on.severity-critical { background: #e13c3c; color: #fff; border-color: #e13c3c; }
+.issue-sev-chip.on.severity-high     { background: var(--red); color: #fff; border-color: var(--red); }
+.issue-sev-chip.on.severity-medium   { background: var(--amber); color: #1a1206; border-color: var(--amber); }
+.issue-sev-chip.on.severity-low      { background: #6b7fbf; color: #fff; border-color: #6b7fbf; }
+.issue-sev-chip.on.severity-info     {
+  background: var(--bg-raised);
+  color: var(--text);
+  border-color: var(--accent);
+}
+.issue-sev-chip.on.severity-medium .chip-count { background: rgba(0, 0, 0, 0.38); }
+.issue-sev-chip.on.severity-info .chip-count { background: rgba(255, 255, 255, 0.08); }
+.issue-status-chip.on {
+  background: var(--accent-dim);
+  color: var(--text);
+  border-color: var(--accent);
+}
+/* Intruder status bucket chip colours — override the generic .on   */
+/* accent fill so the active chip reads at a glance by status class */
+/* instead of making the operator read the label. 4xx is a muted    */
+/* amber vs 3xx's full amber so the pair reads apart in one glance. */
+.issue-status-chip.on.intr-b-2xx { background: var(--green); color: #0a0a0a; border-color: var(--green); }
+.issue-status-chip.on.intr-b-3xx { background: var(--amber); color: #1a1206; border-color: var(--amber); }
+.issue-status-chip.on.intr-b-4xx { background: #d1932b; color: #1a1206; border-color: #d1932b; }
+.issue-status-chip.on.intr-b-5xx { background: var(--red); color: #fff; border-color: var(--red); }
+.issue-status-chip.on.intr-b-err { background: #6b7fbf; color: #fff; border-color: #6b7fbf; }
+.issue-status-chip.on.intr-b-2xx .chip-count,
+.issue-status-chip.on.intr-b-4xx .chip-count { background: rgba(0, 0, 0, 0.26); }
+.issue-status-chip.on.intr-b-3xx .chip-count { background: rgba(0, 0, 0, 0.38); }
+
+/* ----- Logger kind filter chip strip (R107) ---------------- */
+/* Compact pills in the Logger toolbar replacing the old         */
+/* <select>. "All" sits leftmost; the kind-specific chips take    */
+/* a tinted active fill matching their event kind colour. Off     */
+/* chips stay neutral + dashed. Count badge pill-in-pill, same    */
+/* geometry as .issue-tag-chip for cross-panel consistency.       */
+.logger-kind-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 1px 4px 1px 7px;
+  border-radius: 2px;
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 15px;
+  cursor: pointer;
+  user-select: none;
+  background: var(--bg-elev);
+  color: var(--text-dim);
+  border: 1px dashed var(--border);
+  transition: background 0.1s, border-color 0.1s, border-style 0.1s, color 0.1s, opacity 0.1s;
+}
+.logger-kind-chip .chip-label { text-transform: none; letter-spacing: 0.2px; }
+.logger-kind-chip .chip-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 15px;
+  padding: 0 4px;
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.28);
+  color: inherit;
+  font-size: 9.5px;
+  font-weight: 700;
+}
+.logger-kind-chip:hover { border-color: var(--accent); border-style: solid; }
+.logger-kind-chip.off { opacity: 0.78; }
+.logger-kind-chip.off:hover { opacity: 1; }
+.logger-kind-chip.on {
+  background: var(--accent-dim);
+  color: var(--text);
+  border-color: var(--accent);
+  border-style: solid;
+}
+.logger-kind-chip:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  border-color: var(--border);
+  border-style: dashed;
+}
+.logger-kind-chip:disabled:hover { border-color: var(--border); }
+/* Kind-specific tints when active — reuses the same accent chip  */
+/* body but swaps the border to the kind's palette so the chip    */
+/* reads "I am Traffic/Intercept/Findings/..." in one glance.     */
+.logger-kind-chip.on.kind-transaction { background: var(--accent-dim); border-color: var(--accent); }
+.logger-kind-chip.on.kind-intercept { background: rgba(240, 140, 60, 0.18); border-color: #f09040; color: #f09040; }
+.logger-kind-chip.on.kind-finding { background: rgba(224, 68, 68, 0.18); border-color: #e04444; color: #ff6060; }
+.logger-kind-chip.on.kind-ws { background: rgba(100, 150, 255, 0.16); border-color: #6a9df0; color: #88b4ff; }
+.logger-kind-chip.on.kind-log { background: var(--bg-raised); border-color: var(--text-dim); color: var(--text-dim); }
+.theme-light .logger-kind-chip .chip-count { background: rgba(0, 0, 0, 0.09); }
+.theme-light .logger-kind-chip.on .chip-count { background: rgba(0, 0, 0, 0.18); }
+
+/* ----- Scanner issue tag filter chips (R93) ---------------- */
+/* Same visual rhythm as .issue-status-chip, with a dashed border */
+/* when off to echo the R91 tag-input affordance and a solid      */
+/* accent fill when on so the pivot reads strongly against the    */
+/* severity row above it. mono label matches .finding-tag so a    */
+/* filter chip and a per-finding tag chip read as the same thing. */
+.issue-tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 1px 4px 1px 7px;
+  border-radius: 2px;
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 15px;
+  cursor: pointer;
+  user-select: none;
+  background: var(--bg-elev);
+  color: var(--text-dim);
+  border: 1px dashed var(--border);
+  transition: background 0.1s, border-color 0.1s, border-style 0.1s, color 0.1s, opacity 0.1s;
+}
+.issue-tag-chip .chip-label {
+  font-family: var(--mono);
+  text-transform: none;
+  letter-spacing: 0.2px;
+}
+.issue-tag-chip .chip-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 15px;
+  padding: 0 4px;
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.28);
+  color: inherit;
+  font-size: 9.5px;
+  font-weight: 700;
+}
+.issue-tag-chip:hover { border-color: var(--accent); border-style: solid; }
+.issue-tag-chip.off { opacity: 0.78; }
+.issue-tag-chip.off:hover { opacity: 1; }
+.issue-tag-chip.on {
+  background: var(--accent-dim);
+  color: var(--text);
+  border-color: var(--accent);
+  border-style: solid;
+}
+.theme-light .issue-tag-chip .chip-count { background: rgba(0, 0, 0, 0.09); }
+.theme-light .issue-tag-chip.on .chip-count { background: rgba(0, 0, 0, 0.18); }
+
+/* ----- Scanner issue tag editor -------------------------------- */
+/* R91: inline chip-strip + input for free-form finding tags.      */
+/* `.finding-tag` renders as a muted pill with the label + ×       */
+/* remove button; hover darkens the × so remove intent reads       */
+/* clearly. `.finding-tag-input` auto-sizes with the typed text    */
+/* (minWidth 90 so the placeholder is readable) and strips chrome. */
+.finding-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 3px 1px 7px;
+  border-radius: 2px;
+  font-size: 10.5px;
+  line-height: 15px;
+  background: var(--accent-dim);
+  color: var(--text);
+  border: 1px solid var(--border);
+  user-select: none;
+}
+.finding-tag-label {
+  font-family: var(--mono);
+  letter-spacing: 0.2px;
+}
+.finding-tag-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  margin-left: 2px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+}
+.finding-tag-remove:hover {
+  background: var(--red);
+  color: #fff;
+}
+.finding-tag-input {
+  min-width: 90px;
+  padding: 2px 4px;
+  border: 1px dashed var(--border);
+  border-radius: 2px;
+  background: transparent;
+  color: var(--text);
+  font-size: 10.5px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.1s, background 0.1s;
+}
+.finding-tag-input:focus {
+  border-color: var(--accent);
+  border-style: solid;
+  background: var(--bg);
+}
+.finding-tag-input::placeholder {
+  color: var(--text-dim);
+  font-style: italic;
+}
+.issue-filter-clear {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 10.5px;
+  cursor: pointer;
+  padding: 2px 6px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.issue-filter-clear:hover { color: var(--accent); }
+.theme-light .issue-sev-chip .chip-count,
+.theme-light .issue-status-chip .chip-count { background: rgba(0, 0, 0, 0.09); }
+.theme-light .issue-sev-chip.on .chip-count { background: rgba(0, 0, 0, 0.18); }
+
+.issues-detail {
+  background: var(--bg-raised);
+  overflow: auto;
+}
+.issue-detail {
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.issue-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.issue-head strong { font-size: 11px; }
+.issue-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px dotted var(--border);
+  font-size: 11px;
+}
+.issue-controls label { color: var(--text-dim); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.4px; }
+.issue-tx {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 6px 0;
+}
+.issue-section h4 {
+  margin: 10px 0 4px;
+  font-size: 11px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  font-weight: 600;
+}
+.issue-section ul {
+  margin: 4px 0 0;
+  padding-left: 18px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+.issue-body {
+  margin: 0;
+  padding: 8px 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  font-size: 12px;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 220px;
+  overflow: auto;
+}
+.issue-body.mono { font-family: var(--font-mono, ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace); font-size: 11px; }
+
+/* ------------- Collaborator (OOB) panel ------------------------------- */
+.collab-root {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 14px 20px 28px;
+  background: var(--bg);
+}
+.collab-title { margin: 4px 0 2px; font-size: 13px; font-weight: 600; }
+.collab-sub {
+  margin: 0 0 10px;
+  color: var(--text-dim);
+  font-size: 11px;
+  line-height: 1.4;
+  max-width: 920px;
+}
+.collab-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  max-width: 1400px;
+}
+.collab-card {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 10px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.collab-card-wide { grid-column: 1 / -1; }
+.collab-card h3 {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.collab-blurb {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 11px;
+  line-height: 1.4;
+}
+.collab-kv {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 4px 10px;
+  font-size: 12px;
+}
+.collab-kv > div { display: contents; }
+.collab-kv > div > span {
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  font-size: 10.5px;
+  padding-top: 2px;
+}
+.collab-kv > div > code {
+  color: var(--text);
+  background: transparent;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.collab-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 11px;
+}
+.collab-controls label {
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  font-size: 10.5px;
+}
+.collab-tokens {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 240px;
+  overflow: auto;
+  padding-top: 4px;
+}
+.collab-token {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.collab-token-id {
+  color: var(--accent);
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.collab-token-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+}
+.collab-token-row code {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text);
+  background: transparent;
+}
+.collab-split {
+  display: grid;
+  grid-template-columns: minmax(540px, 1fr) 460px;
+  gap: 1px;
+  background: var(--border);
+  min-height: 340px;
+}
+.collab-interactions {
+  background: var(--bg);
+  overflow: auto;
+  max-height: 540px;
+}
+.collab-interactions table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.collab-interactions th {
+  position: sticky;
+  top: 0;
+  background: var(--bg-elev);
+  padding: 5px 8px;
+  text-align: left;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  font-size: 10.5px;
+  letter-spacing: 0.4px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+  z-index: 1;
+}
+.collab-interactions td {
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.collab-interactions tr { cursor: pointer; }
+.collab-interactions tr:hover td { background: var(--bg-row); }
+.collab-interactions tr.selected td { background: var(--accent-dim); }
+.collab-chip {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 2px;
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  min-width: 42px;
+  text-align: center;
+}
+.collab-chip.http { background: var(--accent-dim); color: var(--accent); border: 1px solid var(--accent); }
+.collab-chip.dns  { background: #1f3a24; color: var(--green); border: 1px solid #26432b; }
+
+.collab-detail {
+  background: var(--bg-raised);
+  overflow: auto;
+  max-height: 540px;
+}
+.collab-detail-body {
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.collab-detail-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.collab-detail-kv {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 3px 10px;
+  font-size: 11px;
+}
+.collab-detail-kv > div { display: contents; }
+.collab-detail-kv > div > span {
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  font-size: 10px;
+  padding-top: 2px;
+}
+.collab-detail-kv > div > code {
+  color: var(--text);
+  background: transparent;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.collab-preview {
+  margin: 4px 0 0;
+  padding: 8px 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  font-size: 11px;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 320px;
+  overflow: auto;
+}
+
+/* ------------- Bambda filter bar -------------------------------------- */
+.bambda-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+.bambda-bar.on {
+  background: var(--accent-dim);
+  border-bottom-color: var(--accent);
+}
+.bambda-bar.error {
+  background: #3a1f22;
+  border-bottom-color: var(--red);
+}
+.bambda-label {
+  color: var(--accent);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  font-size: 10.5px;
+  padding: 2px 6px;
+  border: 1px solid var(--accent);
+  border-radius: 2px;
+  background: var(--bg);
+}
+.bambda-input {
+  flex: 1;
+  min-width: 300px;
+  background: var(--bg-row);
+  border: 1px solid var(--border);
+  padding: 3px 8px;
+  font-size: 12px;
+  color: var(--text);
+}
+.bambda-input:focus { outline: none; border-color: var(--accent); }
+.bambda-stats {
+  color: var(--text-dim);
+  font-size: 11px;
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace);
+}
+.bambda-stats strong { color: var(--text); }
+.bambda-presets {
+  min-width: 100px;
+  font-size: 11px;
+}
+
+/* ------------- Dashboard tasks sidebar -------------------------------- */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 1px;
+  background: var(--border);
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.dashboard-main {
+  background: var(--bg);
+  flex: 1;
+  min-height: 0;
+}
+.dash-tasks {
+  background: var(--bg-raised);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+.dash-tasks-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  background: var(--bg-elev);
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+}
+.dash-tasks-actions {
+  display: flex;
+  gap: 6px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.dash-tasks-menu {
+  position: absolute;
+  top: calc(100% + 2px);
+  right: 0;
+  background: var(--bg-raised);
+  border: 1px solid var(--border-strong);
+  border-radius: 2px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+  min-width: 260px;
+  z-index: 10;
+  padding: 4px;
+}
+.dash-tasks-menu button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+.dash-tasks-list {
+  flex-shrink: 0;
+  max-height: 240px;
+  overflow-y: auto;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.dash-task-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 8px 10px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: border-color 100ms;
+}
+.dash-task-card:hover { border-color: var(--border-strong); }
+.dash-task-card.selected {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+.dash-task-name {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text);
+}
+.dash-task-sub {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.dash-task-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.dash-task-detail {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 10px 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+}
+.dash-section-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-dim);
+  margin: 8px 0 0;
+  font-weight: 600;
+}
+.dash-kv-grid {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 4px 10px;
+  font-size: 11px;
+}
+.dash-kv-grid > div { display: contents; }
+.dash-kv-grid > div > span {
+  color: var(--text-dim);
+  padding-top: 3px;
+  font-size: 11px;
+}
+.dash-kv-grid > div > code {
+  color: var(--text);
+  background: transparent;
+  font-size: 12px;
+}
+.dash-task-log {
+  max-height: 160px;
+  overflow-y: auto;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 6px 8px;
+  font-size: 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* ------------- Right-edge Inspector / Notes sidebar ------------------- */
+.sidebar-rail {
+  width: 34px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  background: var(--bg-raised);
+  border-left: 1px solid var(--border);
+  flex-shrink: 0;
+}
+/* R903: Right-rail vertical label pills demotivated to Burp's mixed-case
+ * silhouette. Prior round had `text-transform: uppercase` + `letter-
+ * spacing: 1px` + `font-weight: 600` which rendered the "Inspector /
+ * Notes / Custom actions" rail as ALL-CAPS stretched-letter labels; the
+ * user-attached Burp screenshot shows mixed-case regular-weight labels
+ * with normal letter-spacing. */
+.rail-pill {
+  background: transparent;
+  color: var(--text-dim);
+  border: none;
+  border-bottom: 1px solid var(--border);
+  padding: 8px 0;
+  cursor: pointer;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  letter-spacing: 0;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 90px;
+}
+.rail-pill:hover { background: var(--bg-elev); color: var(--text); }
+.rail-pill.active {
+  background: var(--accent-dim);
+  color: var(--accent);
+  border-left: 2px solid var(--accent);
+}
+.rail-pill-label { white-space: nowrap; }
+
+.sidebar-drawer {
+  width: 340px;
+  flex-shrink: 0;
+  background: var(--bg-raised);
+  border-left: 1px solid var(--border);
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+.drawer-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--bg-elev);
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+}
+.drawer-blurb {
+  margin: 10px 12px 0;
+  color: var(--text-dim);
+  font-size: 12px;
+  line-height: 1.4;
+}
+.drawer-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+.drawer-section {
+  border-bottom: 1px solid var(--border);
+}
+.drawer-section-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  background: var(--bg-elev);
+  border: none;
+  padding: 5px 10px;
+  color: var(--text);
+  font-size: 11px;
+  text-align: left;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  font-weight: 600;
+}
+.drawer-section-head:hover { background: var(--border); }
+.drawer-caret {
+  color: var(--text-dim);
+  width: 10px;
+  display: inline-block;
+}
+.drawer-section-body {
+  padding: 6px 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.drawer-kv {
+  display: flex;
+  gap: 8px;
+  font-size: 12px;
+  padding: 1px 0;
+}
+.drawer-kv.small { font-size: 11px; }
+.drawer-kv-k {
+  color: var(--text-dim);
+  min-width: 76px;
+  flex-shrink: 0;
+}
+.drawer-kv-v {
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+.notes-area {
+  flex: 1;
+  min-height: 220px;
+  margin: 10px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--text);
+  padding: 8px 10px;
+  font-size: 11px;
+  resize: none;
+  outline: none;
+  font-family: inherit;
+}
+.notes-area:focus { border-color: var(--accent); }
+
+/* ------------- Burp-style status bar ---------------------------------- */
+.burp-statusbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  background: var(--bg-raised);
+  border-top: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 11px;
+}
+.status-link {
+  background: transparent;
+  border: none;
+  color: var(--text);
+  padding: 2px 8px;
+  font-size: 11px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 2px;
+}
+.status-link:hover { background: var(--bg-elev); color: var(--text); }
+.status-link .dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--red);
+}
+.status-link .dot.on { background: var(--green); }
+.status-sep {
+  width: 1px;
+  height: 14px;
+  background: var(--border);
+  margin: 0 3px;
+}
+.status-pill {
+  background: var(--accent-dim);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  padding: 0 5px;
+  border-radius: 2px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 14px;
+}
+.status-pill.red {
+  background: #3a1f22;
+  color: var(--red);
+  border-color: #562426;
+}
+.status-brand {
+  color: var(--text-faint);
+  font-size: 10.5px;
+}
+
+/* ------------- Content Discovery modal -------------------------------- */
+.discovery-dialog {
+  width: min(1100px, 94vw);
+  height: min(700px, 90vh);
+}
+.discovery-head {
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-elev);
+}
+.discovery-target {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  flex-wrap: wrap;
+  font-size: 12px;
+}
+.discovery-target label {
+  color: var(--text-dim);
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.discovery-body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
+  gap: 1px;
+  background: var(--border);
+}
+.discovery-list {
+  background: var(--bg);
+  overflow: auto;
+}
+.discovery-list table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.discovery-list th {
+  position: sticky;
+  top: 0;
+  background: var(--bg-elev);
+  padding: 5px 8px;
+  text-align: left;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  font-size: 10.5px;
+  letter-spacing: 0.4px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+  z-index: 1;
+}
+.discovery-list td {
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--border);
+}
+.discovery-wordlist {
+  background: var(--bg-raised);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px;
+}
+.discovery-wordlist-label {
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 11px;
+}
+.discovery-wordlist textarea {
+  flex: 1;
+  resize: none;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 6px 8px;
+  color: var(--text);
+  font-size: 11px;
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace);
+  outline: none;
+  min-height: 300px;
+}
+.discovery-wordlist textarea:focus { border-color: var(--accent); }
+
+/* ------------- Target Analyzer sub-tab -------------------------------- */
+.analyzer-root {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 24px;
+}
+.analyzer-grid {
+  padding: 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 10px;
+}
+.analyzer-card {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.analyzer-card.wide { grid-column: 1 / -1; }
+.analyzer-card-title {
+  font-size: 10.5px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  font-weight: 600;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+.analyzer-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.analyzer-metric {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 12px;
+}
+.analyzer-metric-value {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+.analyzer-metric-label {
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  font-size: 10.5px;
+}
+.analyzer-path {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 6px 8px;
+  border-radius: 2px;
+  font-size: 11px;
+  word-break: break-all;
+  color: var(--accent);
+}
+.analyzer-bar {
+  display: grid;
+  grid-template-columns: 60px 1fr 42px;
+  gap: 8px;
+  align-items: center;
+  font-size: 11px;
+}
+.analyzer-bar-label {
+  color: var(--text-dim);
+}
+.analyzer-bar-label.ok-2xx { color: var(--green); }
+.analyzer-bar-label.ok-3xx { color: var(--amber); }
+.analyzer-bar-label.ok-4xx { color: var(--amber); }
+.analyzer-bar-label.ok-5xx { color: var(--red); }
+.analyzer-bar-track {
+  height: 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.analyzer-bar-fill {
+  height: 100%;
+  background: var(--accent);
+}
+.analyzer-bar-fill.ok-2xx { background: var(--green); }
+.analyzer-bar-fill.ok-3xx { background: var(--amber); }
+.analyzer-bar-fill.ok-4xx { background: var(--amber); opacity: 0.75; }
+.analyzer-bar-fill.ok-5xx { background: var(--red); }
+.analyzer-bar-val {
+  text-align: right;
+  color: var(--text-dim);
+}
+.analyzer-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  font-size: 11px;
+  color: var(--text);
+  max-height: 160px;
+  overflow-y: auto;
+}
+.analyzer-list li { padding: 1px 0; }
+
+/* ------------- Floating context menu ---------------------------------- */
+.floating-menu {
+  position: fixed;
+  z-index: 3000;
+  background: var(--bg-raised);
+  border: 1px solid var(--border-strong);
+  border-radius: 2px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  min-width: 220px;
+  max-width: 360px;
+  font-size: 12px;
+  user-select: none;
+}
+.floating-menu-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  grid-template-areas:
+    "label hotkey"
+    "hint  hint";
+  padding: 5px 10px 5px 12px;
+  border-radius: 2px;
+  color: var(--text);
+  cursor: pointer;
+  line-height: 1.3;
+}
+.floating-menu-item .floating-menu-label { grid-area: label; }
+.floating-menu-item .floating-menu-hotkey {
+  grid-area: hotkey;
+  color: var(--text-dim);
+  font-size: 11px;
+  margin-left: 20px;
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace);
+}
+.floating-menu-item .floating-menu-hint {
+  grid-area: hint;
+  color: var(--text-faint);
+  font-size: 11px;
+  margin-top: 1px;
+}
+.floating-menu-item.selected {
+  background: var(--accent-dim);
+  color: var(--text);
+}
+.floating-menu-item.selected .floating-menu-hotkey,
+.floating-menu-item.selected .floating-menu-hint {
+  color: var(--text-dim);
+}
+.floating-menu-item.disabled {
+  color: var(--text-faint);
+  cursor: not-allowed;
+}
+.floating-menu-item.disabled.selected {
+  background: transparent;
+}
+.floating-menu-item.danger { color: var(--red); }
+.floating-menu-item.danger.selected {
+  background: #3a1f22;
+}
+.floating-menu-sep {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 2px;
+}
+
+/* ------------- JWT inspector + editor --------------------------------- */
+.jwt-dialog { width: min(1000px, 94vw); height: min(700px, 90vh); }
+.jwt-grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 1px;
+  background: var(--border);
+}
+.jwt-list {
+  background: var(--bg);
+  overflow-y: auto;
+}
+.jwt-list-row {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+.jwt-list-row:hover { background: var(--bg-row); }
+.jwt-list-row.active { background: var(--accent-dim); }
+.jwt-list-loc {
+  color: var(--text-dim);
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.jwt-list-token {
+  display: block;
+  color: var(--accent);
+  font-size: 11px;
+  margin-top: 2px;
+  word-break: break-all;
+}
+.jwt-detail {
+  background: var(--bg-raised);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  min-height: 0;
+  overflow-y: auto;
+}
+.jwt-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.jwt-section-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+}
+.jwt-area {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 8px;
+  font-size: 11px;
+  resize: vertical;
+  min-height: 100px;
+  outline: none;
+}
+.jwt-area:focus { border-color: var(--accent); }
+.jwt-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-top: 1px solid var(--border);
+}
+.jwt-controls label {
+  color: var(--text-dim);
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.jwt-verify {
+  padding: 6px 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  font-size: 12px;
+}
+.jwt-output {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.jwt-output-token {
+  display: block;
+  background: var(--bg);
+  border: 1px solid var(--accent);
+  padding: 8px 10px;
+  color: var(--accent);
+  word-break: break-all;
+  font-size: 11px;
+  border-radius: 2px;
+}
+
+/* ------------- Hierarchical Settings nav ------------------------------ */
+.settings-grid {
+  display: grid !important;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: 1px;
+  background: var(--border);
+  flex: 1 !important;
+  flex-direction: row !important;
+  min-height: 0;
+  overflow: hidden;
+}
+.settings-nav {
+  background: var(--bg-raised);
+  overflow-y: auto;
+  padding: 10px 4px 10px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.settings-search {
+  margin: 0 8px 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 4px 8px;
+  color: var(--text);
+  font-size: 11px;
+  outline: none;
+}
+.settings-search:focus { border-color: var(--accent); }
+.settings-nav-group { display: flex; flex-direction: column; }
+.settings-nav-group-head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px 5px 8px;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--text);
+  user-select: none;
+}
+.settings-nav-group-head:hover { background: var(--bg-elev); }
+.settings-nav-group-head.active {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+.settings-nav-caret {
+  color: var(--text-faint);
+  width: 12px;
+  display: inline-block;
+  text-align: center;
+}
+.settings-nav-children {
+  display: flex;
+  flex-direction: column;
+}
+.settings-nav-leaf {
+  padding: 4px 10px 4px 30px;
+  font-size: 11px;
+  color: var(--text-dim);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.settings-nav-leaf:hover { background: var(--bg-elev); color: var(--text); }
+.settings-nav-leaf.active {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+.settings-scope-pill {
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 1px 6px;
+  border-radius: 2px;
+  font-weight: 700;
+  background: var(--bg-elev);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+}
+.settings-scope-pill.scope-user {
+  background: #1f2d3a;
+  color: var(--blue);
+  border-color: #26384b;
+}
+.settings-scope-pill.scope-project {
+  background: var(--accent-dim);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.settings-right {
+  background: var(--bg);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ------------- Light theme palette overrides -------------------------- */
+/* These selectors re-color the few hardcoded dark backgrounds that
+ * were baked in before the theme toggle landed — mostly the danger /
+ * red / green chip variants and the error-tinted bars. The semantic
+ * accent/red/amber/green tokens flow through CSS variables, but the
+ * raised tinted backgrounds predated the variable set. */
+.theme-light button.danger { border-color: #e9bebe; }
+.theme-light button.danger:hover:not(:disabled) { background: #fbeaea; }
+.theme-light .badge.red { background: #fbeaea; border-color: #e9bebe; }
+.theme-light .badge.green { background: #e2f4e8; border-color: #c1dfc9; }
+.theme-light .collab-chip.dns { background: #e2f4e8; border-color: #c1dfc9; }
+.theme-light .bambda-bar.error { background: #fbeaea; }
+.theme-light .status-pill.red { background: #fbeaea; border-color: #e9bebe; }
+.theme-light .floating-menu-item.danger.selected { background: #fbeaea; }
+.theme-light .settings-scope-pill.scope-user {
+  background: #e2eafc;
+  border-color: #c0cff1;
+}
+.theme-light .issue-body { background: var(--bg); }
+.theme-light .sev-chip.severity-info {
+  background: var(--bg-elev);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+}
+.theme-light .dash-sev-chip.severity-info {
+  background: var(--bg-elev);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+}
+.theme-light .palette-dialog,
+.theme-light .poc-dialog,
+.theme-light .floating-menu {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+}
+.theme-light .notes-area:focus,
+.theme-light .bambda-input:focus,
+.theme-light .jwt-area:focus { border-color: var(--accent); }
+
+/* Form controls — inputs / selects / textareas get a subtle elevation
+ * on light theme so they stand out from the surface. */
+.theme-light input,
+.theme-light select,
+.theme-light textarea {
+  background: var(--bg-raised);
+}
+
+/* Repeater in-editor Ctrl+F search bar (overlays the top of the raw textarea). */
+.rep-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px;
+  background: var(--bg-raised);
+  border-bottom: 1px solid var(--border);
+  flex: 0 0 auto;
+}
+.rep-search-bar input[type="text"] {
+  flex: 1;
+  min-width: 80px;
+  padding: 3px 6px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 11px;
+}
+.rep-search-bar input[type="text"]:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+.rep-search-count {
+  color: var(--text-dim);
+  font-size: 11px;
+  min-width: 48px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.rep-search-bar button.ghost {
+  padding: 2px 8px;
+  font-size: 11px;
+  min-width: 24px;
+}
+.rep-search-bar button.ghost.on {
+  background: var(--accent-dim);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* Response render-mode preview iframe. `sandbox=""` keeps the body
+   isolated — no scripts, no form submission, no top-navigation. */
+.rep-render-frame {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  border: none;
+  background: #ffffff;
+}
+
+/* R836: Burp Decoder's per-pane Text / Hex radio toggle. Lives
+   inline in each step header (and the Input pane header). Compact
+   pill-pair with a shared border and no gap between buttons, so it
+   reads as a single toggle unit rather than two separate buttons.
+   Active state uses the orange accent tint; inactive is muted bg.
+   Matches the look of similar `rep-pane-view-toggle` toggles used
+   elsewhere in BurpFree (keeps the family visually consistent). */
+.decoder-view-toggle {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+  font-size: 11px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.decoder-view-toggle button {
+  padding: 2px 10px;
+  background: var(--bg-raised);
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+  min-width: 36px;
+  transition: background 0.08s linear, color 0.08s linear;
+}
+.decoder-view-toggle button + button {
+  border-left: 1px solid var(--border);
+}
+.decoder-view-toggle button.active {
+  background: rgba(237, 100, 36, 0.18);
+  color: var(--accent);
+  font-weight: 600;
+}
+.theme-light .decoder-view-toggle button.active {
+  background: rgba(211, 91, 20, 0.14);
+}
+.decoder-view-toggle button:hover:not(.active) {
+  background: var(--bg-hover, rgba(255, 255, 255, 0.04));
+  color: var(--text);
+}
+.theme-light .decoder-view-toggle button:hover:not(.active) {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+/* R837: Burp Comparer-style pane headers. Each slot (Item 1 /
+   Item 2) gets a 24px header row above the textarea with the slot
+   label, live char + line counts, and compact per-slot action
+   buttons. Mirror of Burp's Comparer item slot headers. */
+.compare-slot-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 24px;
+  padding: 0 8px;
+  background: var(--bg-raised);
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+}
+.compare-slot-label {
+  color: var(--text);
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+.compare-slot-stats {
+  color: var(--text-faint);
+  font-size: 10.5px;
+}
+.compare-slot-btn {
+  padding: 2px 6px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 11px;
+  line-height: 1;
+  border-radius: 2px;
+  transition: background 0.08s linear, color 0.08s linear, border-color 0.08s linear;
+}
+.compare-slot-btn:not(:disabled):hover {
+  background: var(--bg-hover, rgba(255, 255, 255, 0.04));
+  color: var(--text);
+  border-color: var(--border);
+}
+.compare-slot-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.theme-light .compare-slot-btn:not(:disabled):hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+/* R839: Burp-identical Logger table — sticky column-header row +
+   zebra striping. Burp's data tables share a consistent header
+   typography (`--text-dim` fg, uppercase-adjacent letter-spacing,
+   `--bg-raised` bg, bottom border) and alternating row backgrounds
+   for scan-ease across long event streams. */
+.logger-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.logger-table thead th {
+  background: var(--bg-raised);
+  color: var(--text-dim);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--border);
+}
+.logger-table tbody tr:nth-child(odd):not([style*="--accent-dim"]) {
+  background: rgba(255, 255, 255, 0.015);
+}
+.theme-light .logger-table tbody tr:nth-child(odd):not([style*="--accent-dim"]) {
+  background: rgba(0, 0, 0, 0.015);
+}
+.logger-table tbody tr:hover {
+  background: var(--bg-hover, rgba(255, 255, 255, 0.04)) !important;
+}
+.theme-light .logger-table tbody tr:hover {
+  background: rgba(0, 0, 0, 0.04) !important;
+}
+
+/* R841: Burp-identical main-tabs group separator. Thin vertical
+   rule between related tab groups: Core | Workflow | Analysis |
+   Config. 1px wide, 12px tall (shorter than tab height), muted
+   `--border` color, centered vertically via `align-self: center`.
+   `pointer-events: none` so clicks pass through to the tab bar
+   container. Zero affect on tab click behavior — pure visual. */
+.main-tabs .tab-group-sep {
+  width: 1px;
+  height: 14px;
+  background: var(--border);
+  margin: 0 6px;
+  align-self: center;
+  flex-shrink: 0;
+  pointer-events: none;
+  opacity: 0.65;
+}
+
+/* R849: Burp-identical urgency-tinted count chips on main-tabs.
+   Proxy's pending-intercept count = amber tint (operator action
+   pending), Scanner's findings count = red tint (open issues).
+   History + Target chips stay neutral. On the active tab the chip
+   keeps its urgency tint (operators on that tab need to see WHY
+   it's loud). Light-theme variants included. */
+.main-tabs .tab .count.count-urgent-amber {
+  background: rgba(240, 192, 48, 0.22);
+  color: #f0c030;
+}
+.main-tabs .tab.active .count.count-urgent-amber {
+  background: rgba(240, 192, 48, 0.32);
+  color: #f0c030;
+}
+.main-tabs .tab .count.count-urgent-red {
+  background: rgba(224, 68, 68, 0.22);
+  color: #ff6a6a;
+}
+.main-tabs .tab.active .count.count-urgent-red {
+  background: rgba(224, 68, 68, 0.34);
+  color: #ff6a6a;
+}
+.theme-light .main-tabs .tab .count.count-urgent-amber {
+  background: rgba(200, 150, 20, 0.18);
+  color: #a06500;
+}
+.theme-light .main-tabs .tab .count.count-urgent-red {
+  background: rgba(180, 40, 40, 0.18);
+  color: #b02020;
+}
+
+/* R857: Burp-identical keyboard focus ring for main-tabs. Previously
+   our tab divs had no `tabIndex` + no `:focus-visible` ring so
+   keyboard-only operators (sr, no mouse) couldn't tell which tab
+   was focused. The TAB-chip div stays `role="button"` implicitly
+   via its onClick; adding `:focus-visible` here surfaces a 2px
+   accent ring when operators Tab their way through the row,
+   without stealing the mouse-click aesthetic (plain `:focus` would
+   show the ring on mouse-click which is noisy). */
+.main-tabs .tab:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  border-radius: 2px;
+}
+
+/* 🎯 R860 — 33rd round-number milestone this chunk. Burp-identical
+   theme toggle button on the status bar. Compact icon-only button
+   with hover reveal — matches the surrounding `.status-link`
+   silhouette so the row stays visually unified. */
+.status-theme-toggle {
+  padding: 1px 7px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 11px;
+  line-height: 1.2;
+  border-radius: 2px;
+  transition: background 0.1s linear, border-color 0.1s linear;
+}
+.status-theme-toggle:hover {
+  background: var(--bg-hover, rgba(255, 255, 255, 0.06));
+  color: var(--text);
+  border-color: var(--border);
+}
+.theme-light .status-theme-toggle:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* R863: Light-theme variants for the Pretty JSON/XML syntax
+   coloring. The dark-theme palette uses pastel-bright colors
+   that look great on dark bg but wash out on white — operators
+   who flip to light theme (R860's new status-bar toggle makes
+   this trivial) got muted / low-contrast syntax colors.
+   Darker, more saturated variants here keep readability on
+   white backgrounds without feeling screamy. */
+.theme-light .rep-json-key { color: #0f6b7a; }
+.theme-light .rep-json-str { color: #a0522d; }
+.theme-light .rep-json-num { color: #6a3dcc; }
+.theme-light .rep-json-kw { color: #c0398b; }
+.theme-light .rep-xml-tag { color: #2060b0; }
+.theme-light .rep-xml-attr { color: #0f6b7a; }
+.theme-light .rep-xml-str { color: #a0522d; }
+.theme-light .rep-xml-pi { color: #6a3dcc; }
+.theme-light .rep-xml-cdata { color: #6a3dcc; }
+
+/* R865: Burp-identical scroll shadow on the main-tabs row. Burp
+   Suite 2026.8 fades the right edge of the tab bar when tabs
+   overflow horizontally so operators can tell more tabs exist
+   off-screen. Pure CSS mask with a sharp cutoff — no JS scroll
+   handler needed. Only fires when the row actually overflows
+   (via scrollbar-width:none and overflow-x:auto which the
+   existing `.main-tabs` already carries), the mask stays
+   invisible on short rows because the mask only visually clips
+   where there's actually content extending into the fade zone. */
+.main-tabs {
+  mask-image: linear-gradient(to right, black 0%, black calc(100% - 24px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, black 0%, black calc(100% - 24px), transparent 100%);
+}
+
+/* R874: Comparer diff row hover highlight. Burp Suite 2026.8 tints
+   the diff row under the cursor so operators tracking a long diff
+   don't lose their position. Preserve the insert/delete coloring
+   on the content cell while adding a subtle row-wide hover bg. */
+.compare-diff-table tbody tr:hover td {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+.theme-light .compare-diff-table tbody tr:hover td {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+/* R875: Collaborator OOB interaction count chip tint — teal-cyan
+   because OOB callbacks are exciting (payload fired!) but informa-
+   tional (no action required). Sits between the neutral History/
+   Target counts and the alarming Proxy/Scanner urgency tints. */
+.main-tabs .tab .count.count-urgent-cyan {
+  background: rgba(74, 179, 198, 0.22);
+  color: #4ab3c6;
+}
+.main-tabs .tab.active .count.count-urgent-cyan {
+  background: rgba(74, 179, 198, 0.34);
+  color: #4ab3c6;
+}
+.theme-light .main-tabs .tab .count.count-urgent-cyan {
+  background: rgba(20, 110, 125, 0.14);
+  color: #0f6b7a;
+}
+
+/* R888: Burp-identical disabled menu entry styling. The Burp
+   menu's "[Pro version only]" entries render greyed out and
+   non-clickable in the real Burp Suite 2026.8 menu. Ours
+   mirrors — dim text, no hover tint, cursor stays default,
+   click handler short-circuits via the `disabled` branch. */
+.menu-dropdown-item-disabled {
+  color: var(--text-faint);
+  cursor: default;
+  opacity: 0.55;
+}
+.menu-dropdown-item-disabled:hover {
+  background: transparent !important;
+  color: var(--text-faint) !important;
+}
+
+/* R890: Burp-identical Response pane ⏸ ■ ▶ playback icon cluster.
+   Compact 3-button group matching the icon cluster visible in the
+   user's Burp screenshot. Active state: red ▶ for live (Burp's
+   signal that render is live), amber ⏸ for paused, dim ■ for
+   stopped. Only renders for response panes via the TSX guard. */
+.rep-render-state {
+  display: inline-flex;
+  gap: 1px;
+  margin-left: 8px;
+  padding: 0;
+}
+.rep-render-btn {
+  padding: 1px 6px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1.2;
+  border-radius: 2px;
+  transition: background 0.08s linear, color 0.08s linear, border-color 0.08s linear;
+}
+.rep-render-btn:hover {
+  background: var(--bg-hover, rgba(255, 255, 255, 0.04));
+  color: var(--text);
+  border-color: var(--border);
+}
+.rep-render-btn.active {
+  background: rgba(237, 100, 36, 0.14);
+  color: var(--accent);
+  border-color: rgba(237, 100, 36, 0.35);
+}
+.rep-render-btn.rep-render-btn-live {
+  color: #e04444;
+  background: rgba(224, 68, 68, 0.14);
+  border-color: rgba(224, 68, 68, 0.35);
+}
+.theme-light .rep-render-btn:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+$exe='F:\burpfree-target\debug\burpfree-tauri.exe'
+$out="$env:TEMP\r891ff-smoke-out.log"
+$err="$env:TEMP\r891ff-smoke-err.log"
+$sentinel="$env:TEMP\r891ff-smoke-sentinel.txt"
+Remove-Item $out,$err,$sentinel -ErrorAction SilentlyContinue
+$p = Start-Process -FilePath $exe -PassThru -RedirectStandardOutput $out -RedirectStandardError $err
+"PID=$($p.Id)" | Out-File $sentinel -Encoding ASCII
+Start-Sleep 3; "ALIVE_3s=$(-not $p.HasExited)" | Add-Content $sentinel
+Start-Sleep 4; "ALIVE_7s=$(-not $p.HasExited)" | Add-Content $sentinel
+Start-Sleep 4; "ALIVE_11s=$(-not $p.HasExited)" | Add-Content $sentinel
+Start-Sleep 4; "ALIVE_15s=$(-not $p.HasExited)" | Add-Content $sentinel
+if (-not $p.HasExited) { Stop-Process -Id $p.Id -Force }
+Start-Sleep 2
+if (Test-Path $err) { "ERR_BYTES=$([IO.File]::ReadAllBytes($err).Length)" | Add-Content $sentinel }
+else { "ERR_BYTES=0" | Add-Content $sentinel }
+"SMOKE_DONE" | Add-Content $sentinel
+
+/* R891: Custom actions drawer item styling. Compact button-row
+   items that mimic the ghost-style per-row entries operators
+   expect in a quick-action menu. Hover-reveal border. */
+.custom-actions-item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  width: 100%;
+  padding: 5px 8px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 12px;
+  text-align: left;
+  border-radius: 2px;
+  transition: background 0.08s linear, border-color 0.08s linear;
+}
+.custom-actions-item:hover {
+  background: var(--bg-hover, rgba(255, 255, 255, 0.04));
+  border-color: var(--border);
+}
+.theme-light .custom-actions-item:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+/* R894: Burp-identical "Configure target details" modal. Matches
+   the dialog from the user-attached screenshot: fixed-size centered
+   modal with Host/SNI/Port/HTTPS fields + OK/Cancel footer. The
+   overlay dims the whole viewport so operators can't miss the
+   modal; clicking the backdrop closes (same as Cancel). */
+.rep-config-target-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+.rep-config-target-modal {
+  background: var(--bg-raised);
+  border: 1px solid var(--border-strong);
+  border-radius: 2px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+  min-width: 320px;
+  max-width: 420px;
+  color: var(--text);
+}
+.rep-config-target-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+  border-radius: 2px 4px 0 0;
+}
+.rep-config-target-close {
+  background: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  padding: 0 4px;
+}
+.rep-config-target-close:hover {
+  color: rgba(255, 255, 255, 0.75);
+}
+.rep-config-target-body {
+  padding: 12px;
+}
+.rep-config-target-blurb {
+  margin: 0 0 14px 0;
+  color: var(--text-dim);
+  font-size: 12px;
+}
+.rep-config-target-field {
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.rep-config-target-field > label:not(.rep-config-target-check) {
+  font-size: 12px;
+  color: var(--text);
+  font-weight: 600;
+}
+.rep-config-target-field input[type="text"],
+.rep-config-target-field input[type="number"] {
+  padding: 6px 8px;
+  background: var(--bg);
+  border: 1px solid var(--accent);
+  color: var(--text);
+  font-size: 11px;
+  outline: none;
+  border-radius: 2px;
+}
+.rep-config-target-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  cursor: pointer;
+}
+.rep-config-target-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 10px 16px 14px;
+  border-top: 1px solid var(--border);
+}
+.rep-config-target-foot button {
+  min-width: 60px;
+  padding: 5px 14px;
+}

@@ -1,0 +1,21 @@
+# OAuth misconfiguration detection
+metadata:
+  name: OAuth misconfiguration
+  description: Tests OAuth flows for common misconfigurations including open redirect in callback and missing state parameter.
+  author: BurpFree
+  version: "1.0"
+  tags: [active, oauth, auth, misconfig]
+severity: high
+confidence: tentative
+type: active
+probes:
+  - name: Open redirect in redirect_uri
+    param: redirect_uri
+    value: "https://evil.example.com/callback"
+    match_status: [302, 303]
+    match_header_contains:
+      Location: "evil.example.com"
+  - name: Missing state parameter
+    description: Check if OAuth flow works without state parameter
+    remove_param: state
+remediation: Validate redirect_uri strictly. Always require and validate the state parameter.

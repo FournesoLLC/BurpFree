@@ -1,0 +1,24 @@
+# API key / secret exposure
+metadata:
+  name: API key and secret exposure
+  description: Passive check for API keys, tokens, and secrets in response bodies and headers.
+  author: BurpFree
+  version: "1.0"
+  tags: [passive, secrets, information-disclosure]
+severity: high
+confidence: tentative
+type: passive
+patterns:
+  - name: AWS Access Key
+    regex: "AKIA[0-9A-Z]{16}"
+  - name: Google API Key
+    regex: "AIza[0-9A-Za-z_-]{35}"
+  - name: Slack Token
+    regex: "xox[baprs]-[0-9A-Za-z-]+"
+  - name: GitHub Token
+    regex: "gh[ps]_[0-9A-Za-z]{36}"
+  - name: Generic API Key
+    regex: "(?i)(api[_-]?key|apikey|secret[_-]?key|access[_-]?token)[\"':\\s]*[=:]\\s*[\"'][A-Za-z0-9+/=_-]{20,}[\"']"
+  - name: Private Key marker
+    regex: "-----BEGIN (RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----"
+remediation: Rotate exposed keys immediately. Never embed secrets in client-side code or responses.

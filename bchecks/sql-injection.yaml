@@ -1,0 +1,20 @@
+# SQL injection detection
+metadata:
+  name: SQL injection
+  description: Tests parameters for SQL injection via error-based and boolean-based probes.
+  author: BurpFree
+  version: "1.0"
+  tags: [active, sqli, injection]
+severity: high
+confidence: tentative
+type: active
+payloads:
+  - value: "'"
+    match_body_any: ["SQL syntax", "mysql_fetch", "ORA-", "pg_query", "sqlite3.OperationalError", "SQLSTATE", "Unclosed quotation"]
+  - value: "' OR '1'='1"
+  - value: "1' AND '1'='1"
+  - value: "' UNION SELECT NULL--"
+  - value: "1; WAITFOR DELAY '0:0:5'--"
+    timing_threshold_ms: 4500
+remediation: >
+  Use parameterized queries. Never concatenate user input into SQL strings.

@@ -1,0 +1,55 @@
+# SSRF detection
+#
+# Active check — tests URL-type parameters for server-side request
+# forgery by injecting internal and metadata endpoints.
+
+metadata:
+  name: Server-side request forgery (SSRF)
+  description: >
+    Tests URL parameters for SSRF by injecting internal IP addresses,
+    cloud metadata endpoints, and DNS rebind targets.
+  author: BurpFree
+  version: "1.0"
+  tags: [active, ssrf, injection]
+
+severity: high
+confidence: tentative
+type: active
+
+target_params:
+  - url
+  - uri
+  - path
+  - dest
+  - redirect
+  - site
+  - html
+  - val
+  - data
+  - load
+  - fetch
+  - request
+
+payloads:
+  - value: "http://169.254.169.254/latest/meta-data/"
+    description: "AWS EC2 metadata endpoint"
+    match_body: "ami-id"
+
+  - value: "http://metadata.google.internal/computeMetadata/v1/"
+    description: "GCP metadata endpoint"
+    match_header: "Metadata-Flavor"
+
+  - value: "http://127.0.0.1:80/"
+    description: "Localhost probe"
+    match_status: [200]
+
+  - value: "http://[::1]/"
+    description: "IPv6 localhost"
+
+  - value: "http://0.0.0.0/"
+    description: "Wildcard address"
+
+remediation: >
+  Validate and sanitize all user-supplied URLs against an allowlist.
+  Block requests to internal IP ranges, link-local addresses, and
+  cloud metadata endpoints. Use DNS resolution validation.

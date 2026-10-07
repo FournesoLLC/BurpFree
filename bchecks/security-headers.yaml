@@ -1,0 +1,51 @@
+# Missing security headers
+#
+# Passive check — examines response headers for the absence of
+# critical security headers. Maps to Burp's "Missing security
+# headers" scanner issue family.
+
+metadata:
+  name: Missing security headers
+  description: >
+    Checks responses for missing HTTP security headers that protect
+    against clickjacking, XSS, MIME-sniffing, and other client-side
+    attacks.
+  author: BurpFree
+  version: "1.0"
+  tags: [passive, headers, misconfig]
+
+severity: low
+confidence: certain
+type: passive
+
+checks:
+  - header: X-Frame-Options
+    missing_message: >
+      Missing X-Frame-Options header. The page may be vulnerable to
+      clickjacking attacks. Set to DENY or SAMEORIGIN.
+
+  - header: X-Content-Type-Options
+    expected: nosniff
+    missing_message: >
+      Missing X-Content-Type-Options: nosniff. Browsers may MIME-sniff
+      responses, enabling content-type confusion attacks.
+
+  - header: Strict-Transport-Security
+    missing_message: >
+      Missing Strict-Transport-Security (HSTS) header. Connections may
+      be downgraded from HTTPS to HTTP via SSL-stripping.
+
+  - header: Content-Security-Policy
+    missing_message: >
+      Missing Content-Security-Policy header. The page lacks CSP
+      protections against XSS and data injection attacks.
+
+  - header: Referrer-Policy
+    missing_message: >
+      Missing Referrer-Policy header. Sensitive URL paths may leak
+      to third parties via the Referer header.
+
+  - header: Permissions-Policy
+    missing_message: >
+      Missing Permissions-Policy header. Browser features (camera,
+      microphone, geolocation) are not explicitly restricted.

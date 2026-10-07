@@ -1,0 +1,18 @@
+# CRLF / HTTP response splitting
+metadata:
+  name: CRLF injection / HTTP response splitting
+  description: Tests for CRLF injection enabling header injection or response splitting.
+  author: BurpFree
+  version: "1.0"
+  tags: [active, crlf, injection]
+severity: medium
+confidence: tentative
+type: active
+payloads:
+  - value: "%0d%0aInjected-Header:true"
+    match_header: "Injected-Header"
+  - value: "%0aInjected-Header:true"
+    match_header: "Injected-Header"
+  - value: "%E5%98%8A%E5%98%8DInjected:true"
+    description: Unicode CRLF bypass
+remediation: Strip CR/LF from all user input used in HTTP headers.

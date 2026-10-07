@@ -1,0 +1,57 @@
+# Admin / backup / VCS path exposure
+#
+# Probes a target host for the well-known paths that regularly leak
+# source control metadata, environment config, or admin interfaces.
+# The payload is a plain GET; no destructive side effects.
+
+metadata:
+  name: Admin / backup / VCS path exposure
+  description: >
+    Probes for common administrative, backup, and version-control
+    paths that are frequently left publicly reachable in production
+    deployments.
+  author: BurpFree
+  version: "1.0"
+  tags: [reconnaissance, misconfig]
+
+severity: medium
+confidence: tentative
+
+candidates:
+  - /admin
+  - /admin/
+  - /admin/login
+  - /administrator
+  - /wp-admin/
+  - /phpmyadmin/
+  - /.git/HEAD
+  - /.git/config
+  - /.env
+  - /.env.local
+  - /backup.sql
+  - /backup.tar.gz
+  - /dump.sql
+  - /server-status
+  - /actuator/env
+  - /actuator/health
+
+match:
+  status: [200, 301, 302, 401, 403]
+  body_contains_none:
+    - "<title>404"
+    - "<title>Not Found"
+
+report:
+  title: "Interesting path exposed: {path}"
+  description: >
+    {host} returned HTTP {status} for {path}. This path matches a
+    well-known administrative or backup endpoint pattern and should be
+    reviewed for unintended exposure.
+  remediation: >
+    If this path is not required in production, remove it, authenticate
+    it behind the usual access controls, or restrict it at the edge
+    (WAF, reverse-proxy allowlist, basic auth).
+  references:
+    - https://owasp.org/www-community/attacks/Forced_browsing
+    - https://cwe.mitre.org/data/definitions/538.html
+  cwe: [CWE-538]

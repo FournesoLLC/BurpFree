@@ -1,0 +1,25 @@
+# Insecure TLS configuration indicators
+metadata:
+  name: Insecure TLS indicators
+  description: Passive check for TLS configuration weaknesses visible in HTTP responses.
+  author: BurpFree
+  version: "1.0"
+  tags: [passive, tls, crypto, misconfig]
+severity: medium
+confidence: tentative
+type: passive
+checks:
+  - name: Missing HSTS on HTTPS
+    condition: scheme == "https"
+    header_absent: "Strict-Transport-Security"
+    message: "HTTPS response without HSTS header — vulnerable to SSL stripping."
+  - name: HSTS short max-age
+    header_match: "strict-transport-security"
+    pattern: "max-age=([0-9]+)"
+    max_value: 2592000
+    message: "HSTS max-age is less than 30 days."
+  - name: Mixed content indicator
+    condition: scheme == "https"
+    body_contains_any: ["http://", "src=\"http://", "href=\"http://"]
+    message: "HTTPS page references HTTP resources — mixed content."
+remediation: Enable HSTS with max-age >= 1 year. Fix mixed content. Use HTTPS everywhere.

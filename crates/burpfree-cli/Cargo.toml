@@ -1,0 +1,35 @@
+[package]
+name = "burpfree-cli"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "BurpFree headless command-line interface."
+
+[[bin]]
+name = "burpfree"
+path = "src/main.rs"
+
+[dependencies]
+burpfree-core = { path = "../burpfree-core" }
+burpfree-codec = { path = "../burpfree-codec" }
+burpfree-ca = { path = "../burpfree-ca" }
+burpfree-proxy = { path = "../burpfree-proxy" }
+burpfree-storage = { path = "../burpfree-storage" }
+burpfree-engines = { path = "../burpfree-engines" }
+burpfree-api = { path = "../burpfree-api" }
+burpfree-oob = { path = "../burpfree-oob" }
+burpfree-report = { path = "../burpfree-report" }
+burpfree-extensions = { path = "../burpfree-extensions" }
+burpfree-mcp = { path = "../burpfree-mcp" }
+tokio = { workspace = true }
+clap = { workspace = true }
+anyhow = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+chrono = { workspace = true }
+async-trait = { workspace = true }
+parking_lot = { workspace = true }

@@ -1,0 +1,18 @@
+# Insecure deserialization detection
+metadata:
+  name: Insecure deserialization
+  description: Detects deserialization error patterns in responses indicating unsafe object handling.
+  author: BurpFree
+  version: "1.0"
+  tags: [passive, deserialization]
+severity: medium
+confidence: tentative
+type: passive
+patterns:
+  - name: Java deserialization
+    regex: "java\\.io\\.ObjectStreamException|ClassNotFoundException.*readObject|InvalidClassException"
+  - name: PHP unserialize
+    regex: "unserialize\\(\\).*failed|__wakeup|O:\\d+:\""
+  - name: Python pickle
+    regex: "pickle\\.loads|_pickle\\.UnpicklingError"
+remediation: Never deserialize untrusted data. Use JSON. Implement integrity checks.

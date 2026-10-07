@@ -1,0 +1,21 @@
+# Race condition indicators
+metadata:
+  name: Race condition indicators
+  description: Passive check identifying endpoints likely vulnerable to race conditions.
+  author: BurpFree
+  version: "1.0"
+  tags: [passive, race-condition, logic]
+severity: info
+confidence: tentative
+type: passive
+indicators:
+  - name: Financial endpoint
+    path_contains_any: ["/transfer", "/payment", "/withdraw", "/checkout", "/purchase"]
+    message: "Financial endpoint — test for double-spend race condition."
+  - name: Coupon endpoint
+    path_contains_any: ["/apply-coupon", "/redeem", "/discount", "/voucher"]
+    message: "Coupon endpoint — test for double-apply race condition."
+  - name: Vote endpoint
+    path_contains_any: ["/like", "/vote", "/upvote", "/rate", "/follow"]
+    message: "Engagement endpoint — test for multi-vote race condition."
+remediation: Use database transactions, optimistic locking, or idempotency keys.

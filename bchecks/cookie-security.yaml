@@ -1,0 +1,41 @@
+# Cookie security flags
+#
+# Passive check — examines Set-Cookie headers for missing security
+# flags. Maps to Burp's "Cookie without Secure/HttpOnly flag" issue.
+
+metadata:
+  name: Cookie security flags
+  description: >
+    Checks Set-Cookie headers for missing Secure, HttpOnly, and
+    SameSite attributes that protect session cookies from theft
+    and CSRF attacks.
+  author: BurpFree
+  version: "1.0"
+  tags: [passive, cookies, session]
+
+severity: low
+confidence: certain
+type: passive
+
+checks:
+  - flag: Secure
+    missing_message: >
+      Cookie set without the Secure flag. The cookie will be sent
+      over unencrypted HTTP connections, exposing it to network
+      eavesdroppers.
+
+  - flag: HttpOnly
+    missing_message: >
+      Cookie set without the HttpOnly flag. JavaScript can access
+      this cookie via document.cookie, enabling theft via XSS.
+
+  - flag: SameSite
+    missing_message: >
+      Cookie set without a SameSite attribute. The browser's default
+      behavior may allow cross-site request forgery attacks.
+
+  - pattern: "SameSite=None"
+    without: "Secure"
+    message: >
+      Cookie has SameSite=None without the Secure flag. Modern
+      browsers will reject this cookie entirely.

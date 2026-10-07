@@ -1,0 +1,19 @@
+# Prototype pollution detection
+metadata:
+  name: Client-side prototype pollution
+  description: Tests for JavaScript prototype pollution via URL parameters and JSON body.
+  author: BurpFree
+  version: "1.0"
+  tags: [active, prototype-pollution, injection]
+severity: medium
+confidence: tentative
+type: active
+payloads:
+  - value: "__proto__[isAdmin]=true"
+    location: query
+  - value: "constructor[prototype][isAdmin]=true"
+    location: query
+  - value: '{"__proto__":{"isAdmin":true}}'
+    location: body
+    content_type: "application/json"
+remediation: Validate input before object merging. Freeze prototypes. Use Object.create(null).
